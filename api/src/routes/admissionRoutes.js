@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
-const { getPrograms, submitApplication, uploadDocuments } = require('../controllers/admissionController');
+const { getPrograms, submitApplication, uploadDocuments, getMyApplication } = require('../controllers/admissionController');
 
 // Public route to see programs
 router.get('/programs', getPrograms);

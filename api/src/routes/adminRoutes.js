@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
-const { createProgram, generateVouchers } = require('../controllers/adminController');
+const { createProgram, generateVouchers, admitApplicant, getApplications } = require('../controllers/adminController');
+const { exportNSSData } = require('../controllers/exportController');
+
 
 router.use(protect);
 

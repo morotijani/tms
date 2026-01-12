@@ -21,7 +21,11 @@ const LoginPage = () => {
             const user = await login(email, password);
             if (user.role === 'applicant') navigate('/applicant');
             else if (user.role === 'admin') navigate('/admin');
-            else navigate('/dashboard');
+            else if (user.role === 'student') navigate('/student');
+            else if (user.role === 'staff') navigate('/staff');
+            else if (user.role === 'accountant') navigate('/accountant');
+            else navigate('/');
+
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
         } finally {
