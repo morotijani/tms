@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Save, Loader2, ChevronRight, ChevronLeft, CheckCircle, User, GraduationCap, Users, FileCheck } from 'lucide-react';
+import { Save, Loader2, ChevronRight, ChevronLeft, CheckCircle, User, GraduationCap, Users, FileCheck, Plus, Trash2, Printer } from 'lucide-react';
+
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,11 +22,10 @@ const AdmissionForm = ({ application, setApplication }) => {
         secondarySchoolStartYear: '', secondarySchoolEndYear: '',
         results: {
             sittings: [
-                { year: '', indexNo: '', aggregate: '', core: { English: '', Maths: '', Science: '' }, electives: [{ subject: '', grade: '' }, { subject: '', grade: '' }, { subject: '', grade: '' }] },
-                { year: '', indexNo: '', aggregate: '', core: { English: '', Maths: '', Science: '' }, electives: [{ subject: '', grade: '' }, { subject: '', grade: '' }, { subject: '', grade: '' }] },
                 { year: '', indexNo: '', aggregate: '', core: { English: '', Maths: '', Science: '' }, electives: [{ subject: '', grade: '' }, { subject: '', grade: '' }, { subject: '', grade: '' }] }
             ]
         },
+
 
         // Step 3: Program Selection
         firstChoiceId: '', secondChoiceId: '', thirdChoiceId: '',
@@ -60,9 +60,11 @@ const AdmissionForm = ({ application, setApplication }) => {
                 firstChoiceId: application.firstChoiceId || '',
                 secondChoiceId: application.secondChoiceId || '',
                 thirdChoiceId: application.thirdChoiceId || '',
-                results: application.results || prev.results
+                results: (application.results && application.results.sittings && application.results.sittings.length > 0) ? application.results : prev.results
             }));
         }
+
+
     }, [application]);
 
     const handleChange = (e) => {
@@ -71,25 +73,59 @@ const AdmissionForm = ({ application, setApplication }) => {
     };
 
     const handleResultChange = (sittingIndex, field, value, subField = null, electiveIndex = null) => {
-        const newSittings = [...formData.results.sittings];
+        const newResults = JSON.parse(JSON.stringify(formData.results));
+        const sitting = newResults.sittings[sittingIndex];
+
         if (subField === 'core') {
-            newSittings[sittingIndex].core[field] = value;
+            sitting.core[field] = value;
         } else if (subField === 'electives') {
-            newSittings[sittingIndex].electives[electiveIndex][field] = value;
+            sitting.electives[electiveIndex][field] = value;
         } else {
-            newSittings[sittingIndex][field] = value;
+            sitting[field] = value;
         }
-        setFormData(prev => ({ ...prev, results: { sittings: newSittings } }));
+        setFormData(prev => ({ ...prev, results: newResults }));
     };
 
-    const handleSubmit = async (e) => {
+    const addSitting = () => {
+        if (formData.results.sittings.length < 3) {
+            const newSitting = { year: '', indexNo: '', aggregate: '', core: { English: '', Maths: '', Science: '' }, electives: [{ subject: '', grade: '' }, { subject: '', grade: '' }, { subject: '', grade: '' }] };
+            setFormData(prev => ({
+                ...prev,
+                results: {
+                    ...prev.results,
+                    sittings: [...prev.results.sittings, newSitting]
+                }
+            }));
+        }
+    };
+
+    const removeSitting = (index) => {
+        if (formData.results.sittings.length > 1) {
+            setFormData(prev => ({
+                ...prev,
+                results: {
+                    ...prev.results,
+                    sittings: prev.results.sittings.filter((_, i) => i !== index)
+                }
+            }));
+        }
+    };
+
+
+    const handleSubmit = async (e, forceStatus = null) => {
         if (e) e.preventDefault();
         setLoading(true);
         setSuccess(false);
         try {
-            const { data } = await api.post('/admission/apply', formData);
+            const status = forceStatus || (step === 4 ? 'Submitted' : 'Draft');
+            const { data } = await api.post('/admission/apply', { ...formData, status });
             setApplication(data.application);
             setSuccess(true);
+
+            if (status === 'Submitted') {
+                setShowPreview(true);
+            }
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
             alert(err.response?.data?.message || 'Failed to save form');
@@ -97,6 +133,7 @@ const AdmissionForm = ({ application, setApplication }) => {
             setLoading(false);
         }
     };
+
 
 
     const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
@@ -108,6 +145,129 @@ const AdmissionForm = ({ application, setApplication }) => {
         { id: 3, label: 'Programs', icon: <FileCheck size={18} /> },
         { id: 4, label: 'Referee', icon: <Users size={18} /> }
     ];
+
+    const [showPreview, setShowPreview] = useState(false);
+
+    if (showPreview) {
+        return (
+            <div className="max-w-5xl mx-auto py-10 px-4">
+                <div className="flex justify-between items-center mb-8 no-print">
+                    <button onClick={() => setShowPreview(false)} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors uppercase text-xs font-bold">
+                        <ChevronLeft size={16} /> Back to Edit
+                    </button>
+                    <button onClick={() => window.print()} className="btn btn-primary flex items-center gap-2">
+                        <Printer size={18} /> Print / Save as PDF
+                    </button>
+                </div>
+
+                <div className="bg-white text-slate-900 p-12 rounded-2xl shadow-2xl print:shadow-none print:p-0 min-h-[297mm]">
+                    <div className="flex justify-between items-start border-b-4 border-slate-900 pb-8 mb-8">
+                        <div>
+                            <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">University Application</h1>
+                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Academic Year 2025/2026</p>
+                        </div>
+                        <div className="text-right">
+                            <div className="w-32 h-32 bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center overflow-hidden">
+                                {application?.passportPhoto ? (
+                                    <img src={`http://localhost:5000${application.passportPhoto}`} alt="Passport" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-[10px] text-slate-400 font-bold">Passport Photo</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-12 mb-12">
+                        <div className="col-span-2 space-y-8">
+                            <section>
+                                <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-4 border-b border-slate-100 pb-2">Personal Details</h3>
+                                <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Full Name</p><p className="font-bold uppercase text-sm">{formData.firstName} {formData.otherNames} {formData.lastName}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Email</p><p className="font-bold text-sm">{formData.email}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Phone</p><p className="font-bold text-sm">{formData.phoneNumber}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Gender / DOB</p><p className="font-bold text-sm">{formData.gender} / {formData.dateOfBirth}</p></div>
+                                    <div className="col-span-2"><p className="text-[10px] font-bold text-slate-400 uppercase">Address</p><p className="font-bold text-sm">{formData.homeAddress}</p></div>
+                                </div>
+                            </section>
+
+                            <section>
+                                <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-4 border-b border-slate-100 pb-2">Program Choices</h3>
+                                <div className="space-y-4">
+                                    <div className="flex gap-4 items-center">
+                                        <span className="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center font-bold text-[10px]">1</span>
+                                        <p className="font-bold uppercase text-sm">{programs.find(p => p.id === formData.firstChoiceId)?.name || 'Not Selected'}</p>
+                                    </div>
+                                    <div className="flex gap-4 items-center">
+                                        <span className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center font-bold text-[10px]">2</span>
+                                        <p className="font-bold uppercase text-sm">{programs.find(p => p.id === formData.secondChoiceId)?.name || 'Not Selected'}</p>
+                                    </div>
+                                    <div className="flex gap-4 items-center">
+                                        <span className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center font-bold text-[10px]">3</span>
+                                        <p className="font-bold uppercase text-sm">{programs.find(p => p.id === formData.thirdChoiceId)?.name || 'Not Selected'}</p>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <div className="space-y-8 border-l border-slate-100 pl-8">
+                            <section>
+                                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Guardian Info</h3>
+                                <p className="font-bold text-sm uppercase mb-1">{formData.guardianName}</p>
+                                <p className="text-xs text-slate-500 mb-4">{formData.guardianOccupation}</p>
+                                <p className="text-xs font-mono">{formData.guardianContact}</p>
+                            </section>
+                            <section>
+                                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Referee</h3>
+                                <p className="font-bold text-sm uppercase mb-1">{formData.refereeName}</p>
+                                <p className="text-xs text-slate-500">{formData.refereeContact}</p>
+                            </section>
+                        </div>
+                    </div>
+
+                    <section className="mb-12">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-4 border-b border-slate-100 pb-2">Academic History</h3>
+                        <p className="text-xs font-bold mb-4 uppercase">{formData.secondarySchoolName} ({formData.secondarySchoolStartYear} - {formData.secondarySchoolEndYear})</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {formData.results.sittings.map((sit, idx) => (
+                                <div key={idx} className="border border-slate-100 p-4 rounded-xl">
+                                    <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                                        <span className="text-[10px] font-black uppercase">Sitting {idx + 1}</span>
+                                        <span className="text-[10px] font-black">{sit.year}</span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        {Object.entries(sit.core).map(([subj, grade]) => (
+                                            <div key={subj} className="flex justify-between text-[10px] uppercase font-bold">
+                                                <span className="text-slate-400">{subj}</span>
+                                                <span className="text-blue-600">{grade || '-'}</span>
+                                            </div>
+                                        ))}
+                                        {sit.electives.map((el, eIdx) => (
+                                            <div key={eIdx} className="flex justify-between text-[10px] uppercase font-bold">
+                                                <span className="text-slate-400">{el.subject || 'Elective'}</span>
+                                                <span className="text-indigo-600">{el.grade || '-'}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <footer className="mt-auto pt-12 border-t border-slate-100 text-[10px] flex justify-between items-end">
+                        <div className="max-w-md">
+                            <p className="font-black uppercase mb-2">Declaration</p>
+                            <p className="text-slate-400 leading-relaxed italic">I hereby declare that all information provided is true to the best of my knowledge. I understand that any false declaration may lead to disqualification.</p>
+                        </div>
+                        <div className="text-right">
+                            <div className="w-48 border-b border-slate-900 mb-2"></div>
+                            <p className="font-black uppercase italic">Applicant Signature</p>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+        );
+    }
+
 
     return (
         <div className="max-w-5xl mx-auto py-10 px-4 animate-fade-in">
@@ -266,10 +426,28 @@ const AdmissionForm = ({ application, setApplication }) => {
                                     </div>
                                 </div>
 
-                                <h3 className="text-xl font-bold pt-6 text-blue-500">WASSCE / SSCE Results</h3>
+                                <div className="flex justify-between items-center pt-6 mb-4">
+                                    <h3 className="text-xl font-bold text-blue-500">WASSCE / SSCE Results</h3>
+                                    {formData.results.sittings.length < 3 && (
+                                        <button type="button" onClick={addSitting} className="btn bg-blue-600/10 text-blue-500 text-xs py-2 px-4 rounded-xl flex items-center gap-2 font-bold hover:bg-blue-600 hover:text-white transition-all">
+                                            <Plus size={16} /> Add Sitting
+                                        </button>
+                                    )}
+                                </div>
+
                                 {formData.results.sittings.map((sit, sIdx) => (
-                                    <div key={sIdx} className="p-6 bg-slate-950/50 rounded-2xl border border-slate-800 space-y-6">
+                                    <div key={sIdx} className="p-6 bg-slate-950/50 rounded-2xl border border-slate-800 space-y-6 relative group">
+                                        {formData.results.sittings.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeSitting(sIdx)}
+                                                className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
                                         <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+
                                             <span className="text-sm font-black text-slate-500 uppercase tracking-tighter">Sitting {sIdx + 1}</span>
                                             <div className="flex gap-4">
                                                 <div className="flex items-center gap-2">
@@ -392,20 +570,26 @@ const AdmissionForm = ({ application, setApplication }) => {
                         </button>
 
                         <div className="flex gap-4">
-                            <button type="submit" disabled={loading} className="btn bg-slate-800 hover:bg-green-600/20 text-green-500 border border-green-500/20 flex items-center gap-2">
+                            <button type="button" onClick={(e) => handleSubmit(e, 'Draft')} disabled={loading} className="btn bg-slate-800 hover:bg-green-600/20 text-green-500 border border-green-500/20 flex items-center gap-2">
                                 {loading ? <Loader2 className="animate-spin" /> : <><Save size={18} /> Save Progress</>}
                             </button>
+
+                            <button type="button" onClick={() => setShowPreview(true)} className="btn bg-slate-800 hover:bg-slate-700 text-white px-4 flex items-center gap-2">
+                                <FileCheck size={18} /> Preview
+                            </button>
+
 
                             {step < 4 ? (
                                 <button type="button" onClick={nextStep} className="btn btn-primary px-8 flex items-center gap-2 shadow-xl shadow-blue-500/20">
                                     Next Step <ChevronRight size={20} />
                                 </button>
                             ) : (
-                                <button type="submit" disabled={loading || !formData.declarationAccepted} className="btn btn-primary px-10 flex items-center gap-2 bg-green-600 hover:bg-green-500 border-green-600 shadow-xl shadow-green-500/20">
+                                <button type="button" onClick={(e) => handleSubmit(e, 'Submitted')} disabled={loading || !formData.declarationAccepted} className="btn btn-primary px-10 flex items-center gap-2 bg-green-600 hover:bg-green-500 border-green-600 shadow-xl shadow-green-500/20">
                                     {loading ? <Loader2 className="animate-spin" /> : <>Final Submission <CheckCircle size={20} /></>}
                                 </button>
                             )}
                         </div>
+
                     </div>
                 </form>
             </div>

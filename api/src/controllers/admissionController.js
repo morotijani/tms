@@ -62,8 +62,11 @@ const submitApplication = async (req, res) => {
             examType,
             indexNumber,
             examYear,
-            status: 'Submitted'
+            voucherId: req.user.voucherId,
+            status: req.body.status || 'Draft'
         };
+
+
 
 
 
@@ -91,9 +94,12 @@ const uploadDocuments = async (req, res) => {
 
         const updates = {};
         if (req.files['resultSlip']) updates.resultSlip = `/uploads/${req.files['resultSlip'][0].filename}`;
+        if (req.files['resultSlip2']) updates.resultSlip2 = `/uploads/${req.files['resultSlip2'][0].filename}`;
+        if (req.files['resultSlip3']) updates.resultSlip3 = `/uploads/${req.files['resultSlip3'][0].filename}`;
         if (req.files['birthCertificate']) updates.birthCertificate = `/uploads/${req.files['birthCertificate'][0].filename}`;
         if (req.files['transcript']) updates.transcript = `/uploads/${req.files['transcript'][0].filename}`;
         if (req.files['passportPhoto']) updates.passportPhoto = `/uploads/${req.files['passportPhoto'][0].filename}`;
+
 
         await application.update(updates);
 

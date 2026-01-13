@@ -113,7 +113,19 @@ const ApplicantDashboard = () => {
                                     </div>
 
                                 </div>
+
+                                {application?.status === 'Submitted' && (
+                                    <div className="mt-8">
+                                        <button
+                                            onClick={() => setActiveTab('form')}
+                                            className="w-full flex items-center justify-center gap-2 p-4 bg-blue-600/10 text-blue-500 border border-blue-500/20 rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-all shadow-lg"
+                                        >
+                                            <FileText size={20} /> View / Print Submitted Application
+                                        </button>
+                                    </div>
+                                )}
                             </div>
+
 
                             {application?.status === 'Admitted' && (
                                 <div className="glass-card p-6 border-green-500/50 bg-green-500/5">

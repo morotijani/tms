@@ -29,6 +29,15 @@ const Application = sequelize.define('Application', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    resultSlip2: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    resultSlip3: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+
     birthCertificate: {
         type: DataTypes.STRING,
         allowNull: true

@@ -106,6 +106,10 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    voucherId: {
+        type: DataTypes.UUID,
+        allowNull: true
+    },
     isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
@@ -114,6 +118,7 @@ const User = sequelize.define('User', {
         type: DataTypes.DATE,
         allowNull: true
     }
+
 
 }, {
     timestamps: true,

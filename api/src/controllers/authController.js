@@ -36,8 +36,10 @@ const registerApplicant = async (req, res) => {
             password, // Hook will hash this
             firstName,
             lastName,
-            roleId: applicantRole.id
+            roleId: applicantRole.id,
+            voucherId: voucher.id
         });
+
 
         // 5. Update Voucher status
         voucher.status = 'Used';
