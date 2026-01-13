@@ -46,7 +46,10 @@ const admitApplicant = async (req, res) => {
         const application = await Application.findByPk(req.params.id, {
             include: [
                 { model: User },
-                { model: Program, as: 'firstChoice' }
+                { model: Program, as: 'firstChoice' },
+                { model: Program, as: 'secondChoice' },
+                { model: Program, as: 'thirdChoice' }
+
             ]
         });
 
@@ -75,7 +78,10 @@ const getApplications = async (req, res) => {
         const applications = await Application.findAll({
             include: [
                 { model: User },
-                { model: Program, as: 'firstChoice' }
+                { model: Program, as: 'firstChoice' },
+                { model: Program, as: 'secondChoice' },
+                { model: Program, as: 'thirdChoice' }
+
             ]
         });
         res.json(applications);

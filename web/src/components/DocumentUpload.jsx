@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import { Upload, File, CheckCircle, Loader2 } from 'lucide-react';
+
 
 const DocumentUpload = ({ application, setApplication }) => {
     const [files, setFiles] = useState({
         resultSlip: null,
         birthCertificate: null,
-        transcript: null
+        transcript: null,
+        passportPhoto: null
     });
+
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
@@ -17,7 +20,8 @@ const DocumentUpload = ({ application, setApplication }) => {
 
     const handleUpload = async (e) => {
         e.preventDefault();
-        if (!files.resultSlip && !files.birthCertificate && !files.transcript) return;
+        if (!files.resultSlip && !files.birthCertificate && !files.transcript && !files.passportPhoto) return;
+
 
         setLoading(true);
         setSuccess(false);
@@ -26,14 +30,17 @@ const DocumentUpload = ({ application, setApplication }) => {
         if (files.resultSlip) formData.append('resultSlip', files.resultSlip);
         if (files.birthCertificate) formData.append('birthCertificate', files.birthCertificate);
         if (files.transcript) formData.append('transcript', files.transcript);
+        if (files.passportPhoto) formData.append('passportPhoto', files.passportPhoto);
+
 
         try {
-            const { data } = await axios.post('http://localhost:5000/api/admission/upload', formData, {
+            const { data } = await api.post('/admission/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setApplication(data.application);
             setSuccess(true);
         } catch (err) {
+
             alert(err.response?.data?.message || 'Upload failed');
         } finally {
             setLoading(false);
@@ -55,8 +62,10 @@ const DocumentUpload = ({ application, setApplication }) => {
                 {[
                     { label: 'WASSCE/SSCE Result Slip', name: 'resultSlip', current: application?.resultSlip },
                     { label: 'Birth Certificate', name: 'birthCertificate', current: application?.birthCertificate },
-                    { label: 'Academic Transcript (Optional)', name: 'transcript', current: application?.transcript }
+                    { label: 'Academic Transcript (Optional)', name: 'transcript', current: application?.transcript },
+                    { label: 'Passport Size Picture', name: 'passportPhoto', current: application?.passportPhoto }
                 ].map((field, idx) => (
+
                     <div key={idx} className="p-6 bg-slate-900/50 border border-slate-800 rounded-xl flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-slate-800 flex items-center justify-center rounded-lg">

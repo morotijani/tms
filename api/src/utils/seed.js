@@ -1,4 +1,6 @@
-const { Role, Course } = require('../models');
+const { Role, Course, User, Program } = require('../models');
+
+
 
 const seedRoles = async () => {
     try {
@@ -46,4 +48,91 @@ const seedCourses = async () => {
     }
 };
 
-module.exports = { seedRoles, seedCourses };
+const seedUsers = async () => {
+    try {
+        const users = [
+            {
+                username: 'admin',
+                email: 'admin@gums.edu.gh',
+                password: 'admin123',
+                firstName: 'System',
+                lastName: 'Admin',
+                role: 'admin'
+            },
+            {
+                username: 'registrar',
+                email: 'registrar@gums.edu.gh',
+                password: 'registrar123',
+                firstName: 'Academic',
+                lastName: 'Registrar',
+                role: 'registrar'
+            },
+            {
+                username: 'accountant',
+                email: 'accountant@gums.edu.gh',
+                password: 'accountant123',
+                firstName: 'Chief',
+                lastName: 'Accountant',
+                role: 'accountant'
+            },
+            {
+                username: 'staff',
+                email: 'staff@gums.edu.gh',
+                password: 'staff123',
+                firstName: 'Kwame',
+                lastName: 'Mensah',
+                role: 'staff'
+            }
+        ];
+
+        for (const userData of users) {
+            const { role, ...details } = userData;
+            const existingUser = await User.findOne({ where: { email: details.email } });
+
+            if (!existingUser) {
+                const user = await User.create(details);
+                const roleObj = await Role.findOne({ where: { name: role } });
+                if (roleObj) {
+                    await user.setRole(roleObj);
+                }
+            }
+        }
+        console.log('Test users seeded successfully.');
+    } catch (error) {
+        console.error('Error seeding users:', error);
+    }
+};
+
+const seedPrograms = async () => {
+    try {
+        const programs = [
+            // Undergraduate
+            { name: 'BSc. Computer Science', code: 'BCS', faculty: 'Science & Technology', department: 'Computer Science', level: 'Undergraduate', duration: 4 },
+            { name: 'BSc. Information Technology', code: 'BIT', faculty: 'Science & Technology', department: 'Information Technology', level: 'Undergraduate', duration: 4 },
+            { name: 'BSc. Business Administration', code: 'BBA', faculty: 'Business School', department: 'Management', level: 'Undergraduate', duration: 4 },
+            { name: 'BSc. Accounting', code: 'BACC', faculty: 'Business School', department: 'Accounting', level: 'Undergraduate', duration: 4 },
+
+            // Postgraduate
+            { name: 'MSc. Cyber Security', code: 'MCS', faculty: 'Science & Technology', department: 'Computer Science', level: 'Postgraduate', duration: 2 },
+            { name: 'MBA Strategic Management', code: 'MBA', faculty: 'Business School', department: 'Management', level: 'Postgraduate', duration: 2 },
+
+            // Diploma / Mature
+            { name: 'Diploma in Information Technology', code: 'DIT', faculty: 'Science & Technology', department: 'Information Technology', level: 'Diploma', duration: 2 },
+            { name: 'Diploma in Business Management', code: 'DBM', faculty: 'Business School', department: 'Management', level: 'Diploma', duration: 2 }
+        ];
+
+        for (const prog of programs) {
+            await Program.findOrCreate({
+                where: { code: prog.code },
+                defaults: prog
+            });
+        }
+        console.log('Programs seeded successfully.');
+    } catch (error) {
+        console.error('Error seeding programs:', error);
+    }
+};
+
+module.exports = { seedRoles, seedCourses, seedUsers, seedPrograms };
+
+

@@ -32,9 +32,10 @@ const LandingPage = () => {
                         A comprehensive, digital-first University Management System designed for the modern Ghanaian student and staff. Experience seamless admissions, grading, and financials.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <Link to="/register" className="btn btn-primary px-10 py-4 text-lg">
+                        <Link to="/purchase-voucher" className="btn btn-primary px-10 py-4 text-lg">
                             Apply Now <ArrowRight size={20} />
                         </Link>
+
                         <button className="btn bg-slate-800 hover:bg-slate-700 px-10 py-4 text-lg">
                             Explore Programs
                         </button>

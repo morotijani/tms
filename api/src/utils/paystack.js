@@ -8,15 +8,21 @@ const paystack = axios.create({
     }
 });
 
-const initializeTransaction = async (email, amount) => {
+const initializeTransaction = async (email, amount, metadata = {}, callback_url) => {
     try {
-        const response = await paystack.post('/transaction/initialize', {
+        const body = {
             email,
-            amount: amount * 100, // Paystack uses kobo/pesewas
-            currency: 'GHS'
-        });
+            amount: Math.round(amount * 100),
+            currency: 'GHS',
+            metadata
+        };
+        if (callback_url) body.callback_url = callback_url;
+
+        const response = await paystack.post('/transaction/initialize', body);
         return response.data;
+
     } catch (error) {
+
         throw new Error(error.response?.data?.message || 'Paystack initialization failed');
     }
 };

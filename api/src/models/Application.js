@@ -40,7 +40,48 @@ const Application = sequelize.define('Application', {
     admissionLetter: {
         type: DataTypes.STRING, // Path to generated PDF
         allowNull: true
+    },
+    // Educational Background
+    secondarySchoolName: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    secondarySchoolAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    secondarySchoolStartYear: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    secondarySchoolEndYear: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    // Results (Stored as JSON object containing multiple sittings/subjects)
+    results: {
+        type: DataTypes.JSON,
+        allowNull: true
+    },
+    // Referee Info
+    refereeName: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    refereeAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    refereeContact: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    // Media
+    passportPhoto: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
+
 }, {
     timestamps: true
 });

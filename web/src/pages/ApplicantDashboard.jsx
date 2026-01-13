@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../utils/api';
 import { Layout, FileText, Upload, CheckCircle, Clock, AlertCircle, LogOut } from 'lucide-react';
+
 import AdmissionForm from '../components/AdmissionForm';
 import DocumentUpload from '../components/DocumentUpload';
 
@@ -14,9 +15,10 @@ const ApplicantDashboard = () => {
     useEffect(() => {
         const fetchApplication = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/admission/my-application');
+                const { data } = await api.get('/admission/my-application');
                 setApplication(data);
             } catch (err) {
+
                 console.error("No application found yet");
             } finally {
                 setLoading(false);
@@ -105,6 +107,11 @@ const ApplicantDashboard = () => {
                                         <p className="text-xs text-slate-500 font-bold uppercase mb-1">Second Choice</p>
                                         <p className="font-medium">{application?.secondChoice?.name || 'Not Selected'}</p>
                                     </div>
+                                    <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
+                                        <p className="text-xs text-slate-500 font-bold uppercase mb-1">Third Choice</p>
+                                        <p className="font-medium">{application?.thirdChoice?.name || 'Not Selected'}</p>
+                                    </div>
+
                                 </div>
                             </div>
 

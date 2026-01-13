@@ -3,7 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
 const { sequelize, connectDB } = require('./config/database');
-const { seedRoles, seedCourses } = require('./utils/seed');
+const { seedRoles, seedCourses, seedUsers, seedPrograms } = require('./utils/seed');
 
 dotenv.config();
 
@@ -16,8 +16,12 @@ const startDB = async () => {
         await sequelize.sync({ alter: true }); // Use alter in dev to update schema without dropping data
         await seedRoles();
         await seedCourses();
+        await seedUsers();
+        await seedPrograms();
     }
 };
+
+
 
 startDB();
 

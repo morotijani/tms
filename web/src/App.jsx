@@ -8,6 +8,12 @@ import AdminDashboard from './pages/AdminDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import StaffDashboard from './pages/StaffDashboard';
 import AccountantDashboard from './pages/AccountantDashboard';
+import PurchaseVoucher from './pages/PurchaseVoucher';
+import VerifyPayment from './pages/VerifyPayment';
+import ProtectedRoute from './components/ProtectedRoute';
+
+
+
 
 
 
@@ -21,11 +27,16 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterApplicant />} />
-          <Route path="/applicant/*" element={<ApplicantDashboard />} />
-          <Route path="/student/*" element={<StudentDashboard />} />
-          <Route path="/staff/*" element={<StaffDashboard />} />
-          <Route path="/accountant/*" element={<AccountantDashboard />} />
-          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/purchase-voucher" element={<PurchaseVoucher />} />
+          <Route path="/verify-payment" element={<VerifyPayment />} />
+
+
+          <Route path="/applicant/*" element={<ProtectedRoute><ApplicantDashboard /></ProtectedRoute>} />
+          <Route path="/student/*" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+          <Route path="/staff/*" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
+          <Route path="/accountant/*" element={<ProtectedRoute><AccountantDashboard /></ProtectedRoute>} />
+          <Route path="/admin/*" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+
 
 
 

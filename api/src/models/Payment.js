@@ -17,10 +17,18 @@ const Payment = sequelize.define('Payment', {
     },
     method: {
         type: DataTypes.ENUM('MoMo', 'Card', 'Bank Deposit'),
-        allowNull: false
+        allowNull: true
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    metadata: {
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     reference: {
-        type: DataTypes.STRING, // Paystack ref
+        type: DataTypes.STRING,
         unique: true,
         allowNull: false
     },
@@ -32,6 +40,7 @@ const Payment = sequelize.define('Payment', {
         type: DataTypes.DATE,
         allowNull: true
     }
+
 }, {
     timestamps: true
 });

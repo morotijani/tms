@@ -49,6 +49,59 @@ const User = sequelize.define('User', {
         type: DataTypes.DATEONLY,
         allowNull: true
     },
+    placeOfBirth: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    religion: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    hometown: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    district: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    region: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    maritalStatus: {
+        type: DataTypes.ENUM('Single', 'Married', 'Other'),
+        allowNull: true
+    },
+    languagesSpoken: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    homeAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    postalAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    guardianName: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+
+    guardianAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    guardianOccupation: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    guardianContact: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     ghanaPostGps: {
         type: DataTypes.STRING,
         allowNull: true
@@ -61,6 +114,7 @@ const User = sequelize.define('User', {
         type: DataTypes.DATE,
         allowNull: true
     }
+
 }, {
     timestamps: true,
     hooks: {

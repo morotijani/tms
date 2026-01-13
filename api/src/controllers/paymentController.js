@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const { Payment, Invoice, Voucher, User } = require('../models');
+const paystack = require('../utils/paystack');
 
 // @desc    Handle Paystack Webhook
 // @route   POST /api/payments/webhook
@@ -59,8 +60,102 @@ const handleWebhook = async (req, res) => {
             }
         }
     }
-
     res.sendStatus(200);
 };
 
-module.exports = { handleWebhook };
+// @desc    Initialize Voucher Purchase
+// @route   POST /api/payments/initialize-voucher
+// @access  Public
+const initializeVoucherPurchase = async (req, res) => {
+    const { email, voucherType, amount, callback_url } = req.body;
+
+    try {
+        const metadata = {
+            type: 'voucher',
+            voucherType
+        };
+
+        const response = await paystack.initializeTransaction(email, amount, metadata, callback_url);
+
+
+        // Create a pending payment record
+        await Payment.create({
+            reference: response.data.reference,
+            amount,
+            email,
+            status: 'Pending',
+            type: 'Voucher',
+            metadata: JSON.stringify(metadata)
+        });
+
+        res.status(200).json(response.data);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Verify Voucher Purchase
+// @route   GET /api/payments/verify-voucher/:reference
+// @access  Public
+const verifyVoucherTransaction = async (req, res) => {
+    const { reference } = req.params;
+
+    try {
+        const verification = await paystack.verifyTransaction(reference);
+
+        if (verification.data.status === 'success') {
+            const { metadata, amount, customer, reference: paystackRef } = verification.data;
+
+            // Check if payment already processed
+            let payment = await Payment.findOne({ where: { reference: paystackRef } });
+
+            if (payment && payment.status === 'Success') {
+                // Already processed, find the voucher
+                const voucher = await Voucher.findOne({ where: { transactionId: paystackRef } });
+                return res.status(200).json({ status: 'success', voucher });
+            }
+
+            // If payment record exists but not success, update it
+            if (payment) {
+                await payment.update({ status: 'Success', paidAt: new Date() });
+            } else {
+                payment = await Payment.create({
+                    reference: paystackRef,
+                    amount: amount / 100,
+                    email: customer.email,
+                    status: 'Success',
+                    type: 'Voucher',
+                    paidAt: new Date(),
+                    metadata: JSON.stringify(metadata)
+                });
+            }
+
+            // Check if voucher already created
+            let voucher = await Voucher.findOne({ where: { transactionId: paystackRef } });
+
+            if (!voucher) {
+                // Generate a new voucher
+                const serialNumber = 'V' + Math.floor(100000 + Math.random() * 900000);
+                const pin = Math.floor(1000 + Math.random() * 9000).toString();
+
+                voucher = await Voucher.create({
+                    serialNumber,
+                    pin,
+                    status: 'Sold',
+                    type: metadata.voucherType || 'Undergraduate',
+                    price: amount / 100,
+                    soldAt: new Date(),
+                    transactionId: paystackRef
+                });
+            }
+
+            res.status(200).json({ status: 'success', voucher });
+        } else {
+            res.status(400).json({ status: 'failed', message: 'Payment verification failed or pending' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { handleWebhook, initializeVoucherPurchase, verifyVoucherTransaction };
