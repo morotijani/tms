@@ -33,6 +33,8 @@ const studentRoutes = require('./routes/studentRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const financeRoutes = require('./routes/financeRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const registrarRoutes = require('./routes/registrarRoutes');
+
 
 
 
@@ -58,6 +60,8 @@ app.use('/api/student', studentRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/registrar', registrarRoutes);
+
 
 
 

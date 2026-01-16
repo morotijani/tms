@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Save, Loader2, ChevronRight, ChevronLeft, CheckCircle, User, GraduationCap, Users, FileCheck, Plus, Trash2, Printer } from 'lucide-react';
+import { Save, Loader2, ChevronRight, ChevronLeft, CheckCircle, User, GraduationCap, Users, FileCheck, Plus, Trash2, Printer, ExternalLink, FileText } from 'lucide-react';
+
 
 
 import { motion, AnimatePresence } from 'framer-motion';
 
-const AdmissionForm = ({ application, setApplication }) => {
+const AdmissionForm = ({ application, setApplication, readonly = false, onDocClick = null }) => {
+
     const [step, setStep] = useState(1);
+    const [showPreview, setShowPreview] = useState(readonly);
     const [formData, setFormData] = useState({
         // Step 1: Personal Details
         firstName: '', lastName: '', otherNames: '', phoneNumber: '',
@@ -52,17 +55,31 @@ const AdmissionForm = ({ application, setApplication }) => {
 
 
         if (application) {
-            // Merge application data and nested user data
-            setFormData(prev => ({
-                ...prev,
-                ...application,
-                ...(application.User || {}),
-                firstChoiceId: application.firstChoiceId || '',
-                secondChoiceId: application.secondChoiceId || '',
-                thirdChoiceId: application.thirdChoiceId || '',
-                results: (application.results && application.results.sittings && application.results.sittings.length > 0) ? application.results : prev.results
-            }));
+            setFormData(prev => {
+                let srvResults = application.results;
+                if (srvResults && typeof srvResults === 'string') {
+                    try { srvResults = JSON.parse(srvResults); } catch (e) { console.error("Parse error:", e); }
+                }
+
+                const hasSittings = srvResults && Array.isArray(srvResults.sittings) && srvResults.sittings.length > 0;
+                const updatedResults = hasSittings ? srvResults : prev.results;
+
+                const userData = application.User || {};
+
+                return {
+                    ...prev,
+                    ...application,
+                    ...userData,
+                    firstChoiceId: application.firstChoiceId ? String(application.firstChoiceId) : '',
+                    secondChoiceId: application.secondChoiceId ? String(application.secondChoiceId) : '',
+                    thirdChoiceId: application.thirdChoiceId ? String(application.thirdChoiceId) : '',
+                    results: updatedResults
+                };
+            });
         }
+
+
+
 
 
     }, [application]);
@@ -146,19 +163,20 @@ const AdmissionForm = ({ application, setApplication }) => {
         { id: 4, label: 'Referee', icon: <Users size={18} /> }
     ];
 
-    const [showPreview, setShowPreview] = useState(false);
-
     if (showPreview) {
         return (
             <div className="max-w-5xl mx-auto py-10 px-4">
-                <div className="flex justify-between items-center mb-8 no-print">
-                    <button onClick={() => setShowPreview(false)} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors uppercase text-xs font-bold">
-                        <ChevronLeft size={16} /> Back to Edit
-                    </button>
-                    <button onClick={() => window.print()} className="btn btn-primary flex items-center gap-2">
-                        <Printer size={18} /> Print / Save as PDF
-                    </button>
-                </div>
+                {!readonly && (
+                    <div className="mb-8 flex justify-between items-center print:hidden">
+                        <button onClick={() => setShowPreview(false)} className="btn bg-slate-800 text-white flex items-center gap-2">
+                            <ChevronLeft size={20} /> Back to Editor
+                        </button>
+                        <button onClick={() => window.print()} className="btn btn-primary flex items-center gap-2">
+                            <Printer size={20} /> Print / Save as PDF
+                        </button>
+                    </div>
+                )}
+
 
                 <div className="bg-white text-slate-900 p-12 rounded-2xl shadow-2xl print:shadow-none print:p-0 min-h-[297mm]">
                     <div className="flex justify-between items-start border-b-4 border-slate-900 pb-8 mb-8">
@@ -169,10 +187,11 @@ const AdmissionForm = ({ application, setApplication }) => {
                         <div className="text-right">
                             <div className="w-32 h-32 bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center overflow-hidden">
                                 {application?.passportPhoto ? (
-                                    <img src={`http://localhost:5000${application.passportPhoto}`} alt="Passport" className="w-full h-full object-cover" />
+                                    <img src={application.passportPhoto.startsWith('http') ? application.passportPhoto : `http://localhost:5000${application.passportPhoto.startsWith('/') ? '' : '/'}${application.passportPhoto}`} alt="Passport" className="w-full h-full object-cover" />
                                 ) : (
-                                    <span className="text-[10px] text-slate-400 font-bold">Passport Photo</span>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase">No Photo</span>
                                 )}
+
                             </div>
                         </div>
                     </div>
@@ -195,16 +214,17 @@ const AdmissionForm = ({ application, setApplication }) => {
                                 <div className="space-y-4">
                                     <div className="flex gap-4 items-center">
                                         <span className="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center font-bold text-[10px]">1</span>
-                                        <p className="font-bold uppercase text-sm">{programs.find(p => p.id === formData.firstChoiceId)?.name || 'Not Selected'}</p>
+                                        <p className="font-bold uppercase text-sm">{programs.find(p => String(p.id) === String(formData.firstChoiceId))?.name || 'Not Selected'}</p>
                                     </div>
                                     <div className="flex gap-4 items-center">
                                         <span className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center font-bold text-[10px]">2</span>
-                                        <p className="font-bold uppercase text-sm">{programs.find(p => p.id === formData.secondChoiceId)?.name || 'Not Selected'}</p>
+                                        <p className="font-bold uppercase text-sm">{programs.find(p => String(p.id) === String(formData.secondChoiceId))?.name || 'Not Selected'}</p>
                                     </div>
                                     <div className="flex gap-4 items-center">
                                         <span className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center font-bold text-[10px]">3</span>
-                                        <p className="font-bold uppercase text-sm">{programs.find(p => p.id === formData.thirdChoiceId)?.name || 'Not Selected'}</p>
+                                        <p className="font-bold uppercase text-sm">{programs.find(p => String(p.id) === String(formData.thirdChoiceId))?.name || 'Not Selected'}</p>
                                     </div>
+
                                 </div>
                             </section>
                         </div>
@@ -252,6 +272,43 @@ const AdmissionForm = ({ application, setApplication }) => {
                             ))}
                         </div>
                     </section>
+
+                    <section className="mb-12 print:hidden">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-4 border-b border-slate-100 pb-2">Documents & Attachments</h3>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                            {[
+                                { label: 'Result Slip 1', path: application?.resultSlip },
+                                { label: 'Result Slip 2', path: application?.resultSlip2 },
+                                { label: 'Result Slip 3', path: application?.resultSlip3 },
+                                { label: 'Birth Certificate', path: application?.birthCertificate },
+                                { label: 'Transcript', path: application?.transcript }
+                            ].map((doc, idx) => doc.path ? (
+                                <a
+                                    key={idx}
+                                    href={onDocClick ? '#' : (doc.path.startsWith('http') ? doc.path : `http://localhost:5000${doc.path.startsWith('/') ? '' : '/'}${doc.path}`)}
+                                    onClick={(e) => {
+                                        if (onDocClick) {
+                                            e.preventDefault();
+                                            onDocClick(doc.label, doc.path);
+                                        }
+                                    }}
+                                    target={onDocClick ? undefined : "_blank"}
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg hover:border-blue-500 transition-colors group"
+                                >
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded bg-white flex items-center justify-center border border-slate-200 text-blue-600">
+                                            <FileText size={16} />
+                                        </div>
+                                        <span className="text-xs font-bold uppercase text-slate-700">{doc.label}</span>
+                                    </div>
+                                    <ExternalLink size={14} className="text-slate-400 group-hover:text-blue-500" />
+                                </a>
+                            ) : null)}
+                        </div>
+                    </section>
+
 
                     <footer className="mt-auto pt-12 border-t border-slate-100 text-[10px] flex justify-between items-end">
                         <div className="max-w-md">
@@ -564,33 +621,40 @@ const AdmissionForm = ({ application, setApplication }) => {
                     </AnimatePresence>
 
                     {/* Navigation Buttons */}
-                    <div className="flex justify-between items-center mt-12 pt-8 border-t border-slate-800">
-                        <button type="button" onClick={prevStep} disabled={step === 1 || loading} className={`btn flex items-center gap-2 ${step === 1 ? 'opacity-0' : 'bg-slate-800 hover:bg-slate-700'}`}>
-                            <ChevronLeft size={20} /> Previous
-                        </button>
-
-                        <div className="flex gap-4">
-                            <button type="button" onClick={(e) => handleSubmit(e, 'Draft')} disabled={loading} className="btn bg-slate-800 hover:bg-green-600/20 text-green-500 border border-green-500/20 flex items-center gap-2">
-                                {loading ? <Loader2 className="animate-spin" /> : <><Save size={18} /> Save Progress</>}
+                    {!readonly && (
+                        <div className="flex justify-between items-center mt-12 pt-8 border-t border-slate-800">
+                            <button
+                                type="button"
+                                onClick={prevStep}
+                                disabled={step === 1 || loading}
+                                className={`btn flex items-center gap-2 ${step === 1 ? 'opacity-0 pointer-events-none' : 'bg-slate-800 hover:bg-slate-700 text-white'}`}
+                            >
+                                <ChevronLeft size={20} /> Previous
                             </button>
 
-                            <button type="button" onClick={() => setShowPreview(true)} className="btn bg-slate-800 hover:bg-slate-700 text-white px-4 flex items-center gap-2">
-                                <FileCheck size={18} /> Preview
-                            </button>
+                            <div className="flex gap-4">
+                                <button type="button" onClick={(e) => handleSubmit(e, 'Draft')} disabled={loading} className="btn bg-slate-800 hover:bg-green-600/20 text-green-500 border border-green-500/20 flex items-center gap-2">
+                                    {loading ? <Loader2 className="animate-spin" /> : <><Save size={18} /> Save Progress</>}
+                                </button>
+
+                                <button type="button" onClick={() => setShowPreview(true)} className="btn bg-slate-800 hover:bg-slate-700 text-white px-4 flex items-center gap-2">
+                                    <FileCheck size={18} /> Preview
+                                </button>
 
 
-                            {step < 4 ? (
-                                <button type="button" onClick={nextStep} className="btn btn-primary px-8 flex items-center gap-2 shadow-xl shadow-blue-500/20">
-                                    Next Step <ChevronRight size={20} />
-                                </button>
-                            ) : (
-                                <button type="button" onClick={(e) => handleSubmit(e, 'Submitted')} disabled={loading || !formData.declarationAccepted} className="btn btn-primary px-10 flex items-center gap-2 bg-green-600 hover:bg-green-500 border-green-600 shadow-xl shadow-green-500/20">
-                                    {loading ? <Loader2 className="animate-spin" /> : <>Final Submission <CheckCircle size={20} /></>}
-                                </button>
-                            )}
+                                {step < 4 ? (
+                                    <button type="button" onClick={nextStep} className="btn btn-primary px-8 flex items-center gap-2 shadow-xl shadow-blue-500/20">
+                                        Next Step <ChevronRight size={20} />
+                                    </button>
+                                ) : (
+                                    <button type="button" onClick={(e) => handleSubmit(e, 'Submitted')} disabled={loading || !formData.declarationAccepted} className="btn btn-primary px-10 flex items-center gap-2 bg-green-600 hover:bg-green-500 border-green-600 shadow-xl shadow-green-500/20">
+                                        {loading ? <Loader2 className="animate-spin" /> : <>Final Submission <CheckCircle size={20} /></>}
+                                    </button>
+                                )}
+                            </div>
                         </div>
+                    )}
 
-                    </div>
                 </form>
             </div>
 

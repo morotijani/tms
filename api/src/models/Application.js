@@ -89,6 +89,10 @@ const Application = sequelize.define('Application', {
     passportPhoto: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    admittedProgramId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
 
 }, {
@@ -96,3 +100,4 @@ const Application = sequelize.define('Application', {
 });
 
 module.exports = Application;
+

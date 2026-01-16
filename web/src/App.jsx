@@ -8,16 +8,10 @@ import AdminDashboard from './pages/AdminDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import StaffDashboard from './pages/StaffDashboard';
 import AccountantDashboard from './pages/AccountantDashboard';
+import RegistrarDashboard from './pages/RegistrarDashboard';
 import PurchaseVoucher from './pages/PurchaseVoucher';
 import VerifyPayment from './pages/VerifyPayment';
 import ProtectedRoute from './components/ProtectedRoute';
-
-
-
-
-
-
-
 
 function App() {
   return (
@@ -32,7 +26,9 @@ function App() {
 
 
           <Route path="/applicant/*" element={<ProtectedRoute><ApplicantDashboard /></ProtectedRoute>} />
+          <Route path="/registrar/*" element={<ProtectedRoute><RegistrarDashboard /></ProtectedRoute>} />
           <Route path="/student/*" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+
           <Route path="/staff/*" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
           <Route path="/accountant/*" element={<ProtectedRoute><AccountantDashboard /></ProtectedRoute>} />
           <Route path="/admin/*" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

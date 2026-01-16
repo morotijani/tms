@@ -20,7 +20,9 @@ const LoginPage = () => {
         try {
             const user = await login(email, password);
             if (user.role === 'applicant') navigate('/applicant');
+            else if (user.role === 'registrar') navigate('/registrar');
             else if (user.role === 'admin') navigate('/admin');
+
             else if (user.role === 'student') navigate('/student');
             else if (user.role === 'staff') navigate('/staff');
             else if (user.role === 'accountant') navigate('/accountant');

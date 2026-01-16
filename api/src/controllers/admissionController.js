@@ -76,7 +76,19 @@ const submitApplication = async (req, res) => {
             application = await Application.create(appData);
         }
 
-        res.status(200).json({ message: 'Application submitted successfully', application });
+        // Re-fetch with associations for the frontend
+        const fullApplication = await Application.findOne({
+            where: { id: application.id },
+            include: [
+                { model: User },
+                { model: Program, as: 'firstChoice' },
+                { model: Program, as: 'secondChoice' },
+                { model: Program, as: 'thirdChoice' }
+            ]
+        });
+
+        res.status(200).json({ message: 'Application saved successfully', application: fullApplication });
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

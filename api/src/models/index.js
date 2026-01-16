@@ -62,6 +62,8 @@ User.hasOne(Application, { foreignKey: 'userId' });
 Application.belongsTo(Program, { as: 'firstChoice', foreignKey: 'firstChoiceId' });
 Application.belongsTo(Program, { as: 'secondChoice', foreignKey: 'secondChoiceId' });
 Application.belongsTo(Program, { as: 'thirdChoice', foreignKey: 'thirdChoiceId' });
+Application.belongsTo(Program, { as: 'admittedProgram', foreignKey: 'admittedProgramId' });
+
 
 
 Application.belongsTo(Voucher, { foreignKey: 'voucherId' });
