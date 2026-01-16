@@ -7,10 +7,14 @@ import { Save, Loader2, ChevronRight, ChevronLeft, CheckCircle, User, Graduation
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AdmissionForm = ({ application, setApplication, readonly = false, onDocClick = null }) => {
+    const currentYear = new Date().getFullYear();
+    const yearOptions = Array.from({ length: 46 }, (_, i) => currentYear - i); // Last 45 years + current
 
     const [step, setStep] = useState(1);
     const [showPreview, setShowPreview] = useState(readonly);
+    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
+
         // Step 1: Personal Details
         firstName: '', lastName: '', otherNames: '', phoneNumber: '',
         gender: '', dateOfBirth: '', placeOfBirth: '', religion: '',
@@ -129,13 +133,92 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
     };
 
 
+    const validateStep = (currentStep) => {
+        const newErrors = {};
+
+        if (currentStep === 1) {
+            if (!formData.firstName) newErrors.firstName = "First name is required";
+            if (!formData.lastName) newErrors.lastName = "Last name is required";
+            if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
+            if (!formData.gender) newErrors.gender = "Gender is required";
+            if (!formData.phoneNumber) newErrors.phoneNumber = "Phone number is required";
+            if (!formData.ghanaPostGps) newErrors.ghanaPostGps = "GPS Address is required";
+        }
+
+        if (currentStep === 2) {
+            if (!formData.secondarySchoolName) newErrors.secondarySchoolName = "School name is required";
+            if (!formData.secondarySchoolStartYear) newErrors.secondarySchoolStartYear = "Start year is required";
+            if (!formData.secondarySchoolEndYear) newErrors.secondarySchoolEndYear = "End year is required";
+
+            formData.results.sittings.forEach((sit, idx) => {
+                if (!sit.year) newErrors[`sitting_${idx}_year`] = "Year required";
+                if (!sit.indexNo) newErrors[`sitting_${idx}_indexNo`] = "Index No required";
+                Object.keys(sit.core).forEach(sub => {
+                    if (!sit.core[sub]) newErrors[`sitting_${idx}_core_${sub}`] = "Core grade required";
+                });
+                sit.electives.forEach((el, eIdx) => {
+                    if (!el.subject) newErrors[`sitting_${idx}_elective_${eIdx}_subject`] = "Required";
+                    if (!el.grade) newErrors[`sitting_${idx}_elective_${eIdx}_grade`] = "Required";
+                });
+            });
+        }
+
+
+        if (currentStep === 3) {
+            if (!formData.firstChoiceId) newErrors.firstChoiceId = "Choice 1 is required";
+            if (!formData.secondChoiceId) newErrors.secondChoiceId = "Choice 2 is required";
+            if (!formData.thirdChoiceId) newErrors.thirdChoiceId = "Choice 3 is required";
+
+            if (formData.firstChoiceId && formData.secondChoiceId && formData.firstChoiceId === formData.secondChoiceId) {
+                newErrors.secondChoiceId = "Second choice must be different from first choice";
+            }
+            if (formData.thirdChoiceId && (formData.thirdChoiceId === formData.firstChoiceId || formData.thirdChoiceId === formData.secondChoiceId)) {
+                newErrors.thirdChoiceId = "Third choice must be unique";
+            }
+        }
+
+
+        if (currentStep === 4) {
+            if (!formData.refereeName) newErrors.refereeName = "Referee name is required";
+            if (!formData.refereeAddress) newErrors.refereeAddress = "Referee address is required";
+            if (!formData.refereeContact) newErrors.refereeContact = "Referee contact is required";
+            if (!formData.declarationAccepted) newErrors.declarationAccepted = "You must accept the declaration to submit";
+        }
+
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+
     const handleSubmit = async (e, forceStatus = null) => {
         if (e) e.preventDefault();
+
+        const status = forceStatus || (step === 4 ? 'Submitted' : 'Draft');
+
+        // Final submission requires ALL fields across ALL steps to be valid
+        if (status === 'Submitted') {
+            let allValid = true;
+            for (let i = 1; i <= 4; i++) {
+                if (!validateStep(i)) {
+                    setStep(i);
+                    allValid = false;
+                    setTimeout(() => {
+                        const firstError = document.querySelector('.text-red-500');
+                        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                    break;
+                }
+
+            }
+            if (!allValid) return;
+        }
+
         setLoading(true);
         setSuccess(false);
         try {
-            const status = forceStatus || (step === 4 ? 'Submitted' : 'Draft');
             const { data } = await api.post('/admission/apply', { ...formData, status });
+
             setApplication(data.application);
             setSuccess(true);
 
@@ -153,8 +236,25 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
 
 
-    const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
-    const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+    const nextStep = () => {
+        if (validateStep(step)) {
+            setStep(prev => Math.min(prev + 1, 4));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            // Find the first form group with an error and scroll to it
+            setTimeout(() => {
+                const firstError = document.querySelector('.text-red-500');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    };
+
+    const prevStep = () => {
+        setErrors({}); // Clear errors when going back
+        setStep(prev => Math.max(prev - 1, 1));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
 
     const steps = [
         { id: 1, label: 'Personal', icon: <User size={18} /> },
@@ -357,31 +457,36 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                 <div className="grid md:grid-cols-3 gap-6">
                                     <div className="form-group">
                                         <label className="label">First Name</label>
-                                        <input required name="firstName" value={formData.firstName} onChange={handleChange} className="input-field" placeholder="Kofi" />
+                                        <input name="firstName" value={formData.firstName} onChange={handleChange} className={`input-field ${errors.firstName ? 'border-red-500' : ''}`} placeholder="Kofi" rotate={0} />
+                                        {errors.firstName && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.firstName}</p>}
                                     </div>
                                     <div className="form-group">
                                         <label className="label">Last Name</label>
-                                        <input required name="lastName" value={formData.lastName} onChange={handleChange} className="input-field" placeholder="Mensah" />
+                                        <input name="lastName" value={formData.lastName} onChange={handleChange} className={`input-field ${errors.lastName ? 'border-red-500' : ''}`} placeholder="Mensah" rotate={0} />
+                                        {errors.lastName && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.lastName}</p>}
                                     </div>
                                     <div className="form-group">
                                         <label className="label">Other Names</label>
-                                        <input name="otherNames" value={formData.otherNames} onChange={handleChange} className="input-field" placeholder="Kwame" />
+                                        <input name="otherNames" value={formData.otherNames} onChange={handleChange} className="input-field" placeholder="Kwame" rotate={0} />
                                     </div>
                                 </div>
 
                                 <div className="grid md:grid-cols-4 gap-6">
                                     <div className="form-group">
                                         <label className="label">Date of Birth</label>
-                                        <input required type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="input-field" />
+                                        <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className={`input-field ${errors.dateOfBirth ? 'border-red-500' : ''}`} rotate={0} />
+                                        {errors.dateOfBirth && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.dateOfBirth}</p>}
                                     </div>
                                     <div className="form-group">
                                         <label className="label">Gender</label>
-                                        <select required name="gender" value={formData.gender} onChange={handleChange} className="input-field">
+                                        <select name="gender" value={formData.gender} onChange={handleChange} className={`input-field ${errors.gender ? 'border-red-500' : ''}`}>
                                             <option value="">Select</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
                                         </select>
+                                        {errors.gender && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.gender}</p>}
                                     </div>
+
                                     <div className="form-group">
                                         <label className="label">Marital Status</label>
                                         <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="input-field">
@@ -434,9 +539,16 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                     </div>
                                     <div className="form-group">
                                         <label className="label">Ghana Post GPS</label>
-                                        <input required name="ghanaPostGps" value={formData.ghanaPostGps} onChange={handleChange} className="input-field" placeholder="GA-123-4567" />
+                                        <input name="ghanaPostGps" value={formData.ghanaPostGps} onChange={handleChange} className={`input-field ${errors.ghanaPostGps ? 'border-red-500' : ''}`} placeholder="GA-123-4567" rotate={0} />
+                                        {errors.ghanaPostGps && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.ghanaPostGps}</p>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="label">Phone Number</label>
+                                        <input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className={`input-field ${errors.phoneNumber ? 'border-red-500' : ''}`} placeholder="024 123 4567" rotate={0} />
+                                        {errors.phoneNumber && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.phoneNumber}</p>}
                                     </div>
                                 </div>
+
 
                                 <h3 className="text-xl font-bold pt-6 text-blue-500">Parent or Guardian Information</h3>
                                 <div className="grid md:grid-cols-2 gap-6">
@@ -467,21 +579,32 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="form-group">
                                         <label className="label">Secondary School Attended</label>
-                                        <input name="secondarySchoolName" value={formData.secondarySchoolName} onChange={handleChange} className="input-field" placeholder="Prempeh College" />
+                                        <input name="secondarySchoolName" value={formData.secondarySchoolName} onChange={handleChange} className={`input-field ${errors.secondarySchoolName ? 'border-red-500' : ''}`} placeholder="Prempeh College" rotate={0} />
+                                        {errors.secondarySchoolName && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.secondarySchoolName}</p>}
                                     </div>
                                     <div className="form-group">
                                         <label className="label">School Address</label>
-                                        <input name="secondarySchoolAddress" value={formData.secondarySchoolAddress} onChange={handleChange} className="input-field" />
+                                        <input name="secondarySchoolAddress" value={formData.secondarySchoolAddress} onChange={handleChange} className="input-field" rotate={0} />
                                     </div>
                                     <div className="form-group">
                                         <label className="label">From (Year)</label>
-                                        <input type="number" name="secondarySchoolStartYear" value={formData.secondarySchoolStartYear} onChange={handleChange} className="input-field" />
+                                        <select name="secondarySchoolStartYear" value={formData.secondarySchoolStartYear} onChange={handleChange} className={`input-field ${errors.secondarySchoolStartYear ? 'border-red-500' : ''}`}>
+                                            <option value="">Select Year</option>
+                                            {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                                        </select>
+                                        {errors.secondarySchoolStartYear && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.secondarySchoolStartYear}</p>}
                                     </div>
                                     <div className="form-group">
                                         <label className="label">To (Year)</label>
-                                        <input type="number" name="secondarySchoolEndYear" value={formData.secondarySchoolEndYear} onChange={handleChange} className="input-field" />
+                                        <select name="secondarySchoolEndYear" value={formData.secondarySchoolEndYear} onChange={handleChange} className={`input-field ${errors.secondarySchoolEndYear ? 'border-red-500' : ''}`}>
+                                            <option value="">Select Year</option>
+                                            {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                                        </select>
+                                        {errors.secondarySchoolEndYear && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.secondarySchoolEndYear}</p>}
                                     </div>
+
                                 </div>
+
 
                                 <div className="flex justify-between items-center pt-6 mb-4">
                                     <h3 className="text-xl font-bold text-blue-500">WASSCE / SSCE Results</h3>
@@ -509,12 +632,23 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                             <div className="flex gap-4">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-[10px] text-slate-500">Year:</span>
-                                                    <input type="number" value={sit.year} onChange={(e) => handleResultChange(sIdx, 'year', e.target.value)} className="w-16 bg-transparent border-b border-slate-700 text-xs focus:border-blue-500 outline-none" />
+                                                    <div className="flex flex-col">
+                                                        <select value={sit.year} onChange={(e) => handleResultChange(sIdx, 'year', e.target.value)} className={`w-24 bg-slate-900 border-b ${errors[`sitting_${sIdx}_year`] ? 'border-red-500' : 'border-slate-700'} text-xs focus:border-blue-500 outline-none p-1`}>
+                                                            <option value="">Year</option>
+                                                            {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                                                        </select>
+                                                        {errors[`sitting_${sIdx}_year`] && <span className="text-red-500 text-[8px] font-bold uppercase">{errors[`sitting_${sIdx}_year`]}</span>}
+                                                    </div>
                                                 </div>
+
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-[10px] text-slate-500">Index No:</span>
-                                                    <input value={sit.indexNo} onChange={(e) => handleResultChange(sIdx, 'indexNo', e.target.value)} className="w-24 bg-transparent border-b border-slate-700 text-xs focus:border-blue-500 outline-none" />
+                                                    <div className="flex flex-col">
+                                                        <input value={sit.indexNo} onChange={(e) => handleResultChange(sIdx, 'indexNo', e.target.value)} className={`w-24 bg-transparent border-b ${errors[`sitting_${sIdx}_indexNo`] ? 'border-red-500' : 'border-slate-700'} text-xs focus:border-blue-500 outline-none`} />
+                                                        {errors[`sitting_${sIdx}_indexNo`] && <span className="text-red-500 text-[8px] font-bold uppercase">{errors[`sitting_${sIdx}_indexNo`]}</span>}
+                                                    </div>
                                                 </div>
+
                                             </div>
                                         </div>
 
@@ -524,26 +658,36 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                                 <p className="text-xs font-bold text-blue-400 uppercase">Core Subjects</p>
                                                 {Object.keys(sit.core).map((sub) => (
                                                     <div key={sub} className="flex items-center justify-between gap-4">
-                                                        <span className="text-sm text-slate-300">{sub}</span>
-                                                        <select value={sit.core[sub]} onChange={(e) => handleResultChange(sIdx, sub, e.target.value, 'core')} className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm text-slate-300">{sub}</span>
+                                                            {errors[`sitting_${sIdx}_core_${sub}`] && <span className="text-red-500 text-[8px] font-bold uppercase">{errors[`sitting_${sIdx}_core_${sub}`]}</span>}
+                                                        </div>
+                                                        <select value={sit.core[sub]} onChange={(e) => handleResultChange(sIdx, sub, e.target.value, 'core')} className={`bg-slate-900 border ${errors[`sitting_${sIdx}_core_${sub}`] ? 'border-red-500' : 'border-slate-800'} rounded px-2 py-1 text-xs`}>
                                                             <option value="">Grade</option>
                                                             {['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9'].map(g => <option key={g} value={g}>{g}</option>)}
                                                         </select>
                                                     </div>
+
                                                 ))}
                                             </div>
                                             {/* Elective Subjects */}
                                             <div className="space-y-3">
                                                 <p className="text-xs font-bold text-blue-400 uppercase">Elective Subjects</p>
                                                 {sit.electives.map((el, eIdx) => (
-                                                    <div key={eIdx} className="flex gap-2">
-                                                        <input value={el.subject} onChange={(e) => handleResultChange(sIdx, 'subject', e.target.value, 'electives', eIdx)} placeholder="Subject" className="flex-1 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs" />
-                                                        <select value={el.grade} onChange={(e) => handleResultChange(sIdx, 'grade', e.target.value, 'electives', eIdx)} className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs">
-                                                            <option value="">Grade</option>
-                                                            {['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9'].map(g => <option key={g} value={g}>{g}</option>)}
-                                                        </select>
+                                                    <div key={eIdx} className="space-y-1">
+                                                        <div className="flex gap-2">
+                                                            <input value={el.subject} onChange={(e) => handleResultChange(sIdx, 'subject', e.target.value, 'electives', eIdx)} placeholder="Subject" className={`flex-1 bg-slate-900 border ${errors[`sitting_${sIdx}_elective_${eIdx}_subject`] ? 'border-red-500' : 'border-slate-800'} rounded px-2 py-1 text-xs`} />
+                                                            <select value={el.grade} onChange={(e) => handleResultChange(sIdx, 'grade', e.target.value, 'electives', eIdx)} className={`bg-slate-900 border ${errors[`sitting_${sIdx}_elective_${eIdx}_grade`] ? 'border-red-500' : 'border-slate-800'} rounded px-2 py-1 text-xs`}>
+                                                                <option value="">Grade</option>
+                                                                {['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9'].map(g => <option key={g} value={g}>{g}</option>)}
+                                                            </select>
+                                                        </div>
+                                                        {(errors[`sitting_${sIdx}_elective_${eIdx}_subject`] || errors[`sitting_${sIdx}_elective_${eIdx}_grade`]) && (
+                                                            <span className="text-red-500 text-[8px] font-bold uppercase block text-right">Required</span>
+                                                        )}
                                                     </div>
                                                 ))}
+
                                             </div>
                                         </div>
                                     </div>
@@ -559,25 +703,29 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                 <div className="space-y-6">
                                     <div className="form-group pb-4 border-b border-slate-800/50">
                                         <label className="label text-blue-500 uppercase tracking-widest text-[10px]">First Choice</label>
-                                        <select required name="firstChoiceId" value={formData.firstChoiceId} onChange={handleChange} className="input-field text-lg font-bold">
+                                        <select name="firstChoiceId" value={formData.firstChoiceId} onChange={handleChange} className={`input-field text-lg font-bold ${errors.firstChoiceId ? 'border-red-500' : ''}`}>
                                             <option value="">Select Primary Program</option>
                                             {programs.map(p => <option key={p.id} value={p.id}>{p.name} ({p.level})</option>)}
                                         </select>
+                                        {errors.firstChoiceId && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.firstChoiceId}</p>}
                                     </div>
                                     <div className="form-group pb-4 border-b border-slate-800/50">
                                         <label className="label uppercase tracking-widest text-[10px]">Second Choice</label>
-                                        <select required name="secondChoiceId" value={formData.secondChoiceId} onChange={handleChange} className="input-field text-lg">
+                                        <select name="secondChoiceId" value={formData.secondChoiceId} onChange={handleChange} className={`input-field text-lg ${errors.secondChoiceId ? 'border-red-500' : ''}`}>
                                             <option value="">Select Secondary Program</option>
                                             {programs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                                         </select>
+                                        {errors.secondChoiceId && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.secondChoiceId}</p>}
                                     </div>
                                     <div className="form-group">
                                         <label className="label uppercase tracking-widest text-[10px]">Third Choice</label>
-                                        <select required name="thirdChoiceId" value={formData.thirdChoiceId} onChange={handleChange} className="input-field text-lg">
+                                        <select name="thirdChoiceId" value={formData.thirdChoiceId} onChange={handleChange} className={`input-field text-lg ${errors.thirdChoiceId ? 'border-red-500' : ''}`}>
                                             <option value="">Select Third Option</option>
                                             {programs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                                         </select>
+                                        {errors.thirdChoiceId && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.thirdChoiceId}</p>}
                                     </div>
+
                                 </div>
                             </motion.div>
                         )}
@@ -593,15 +741,18 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                 <div className="grid md:grid-cols-1 gap-6">
                                     <div className="form-group">
                                         <label className="label">Referee Full Name</label>
-                                        <input required name="refereeName" value={formData.refereeName} onChange={handleChange} className="input-field" />
+                                        <input name="refereeName" value={formData.refereeName} onChange={handleChange} className={`input-field ${errors.refereeName ? 'border-red-500' : ''}`} rotate={0} />
+                                        {errors.refereeName && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.refereeName}</p>}
                                     </div>
                                     <div className="form-group">
                                         <label className="label">Referee Address</label>
-                                        <input required name="refereeAddress" value={formData.refereeAddress} onChange={handleChange} className="input-field" />
+                                        <input name="refereeAddress" value={formData.refereeAddress} onChange={handleChange} className={`input-field ${errors.refereeAddress ? 'border-red-500' : ''}`} rotate={0} />
+                                        {errors.refereeAddress && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.refereeAddress}</p>}
                                     </div>
                                     <div className="form-group">
-                                        <label className="label">Referee Contact</label>
-                                        <input required name="refereeContact" value={formData.refereeContact} onChange={handleChange} className="input-field" />
+                                        <label className="label">Referee Contact Number</label>
+                                        <input name="refereeContact" value={formData.refereeContact} onChange={handleChange} className={`input-field ${errors.refereeContact ? 'border-red-500' : ''}`} rotate={0} />
+                                        {errors.refereeContact && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.refereeContact}</p>}
                                     </div>
                                 </div>
 
@@ -609,13 +760,15 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                     <h3 className="text-lg font-bold mb-4 uppercase tracking-tighter">Declaration</h3>
                                     <label className="flex items-start gap-4 cursor-pointer group">
                                         <div className="pt-1">
-                                            <input required type="checkbox" checked={formData.declarationAccepted} onChange={(e) => setFormData({ ...formData, declarationAccepted: e.target.checked })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500" />
+                                            <input type="checkbox" checked={formData.declarationAccepted} onChange={(e) => setFormData({ ...formData, declarationAccepted: e.target.checked })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500" />
                                         </div>
                                         <p className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">
                                             I hereby declare that the information given above is true and accurate to the best of my knowledge. I understand that any false information provided may lead to my disqualification or dismissal if already admitted.
                                         </p>
                                     </label>
+                                    {errors.declarationAccepted && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.declarationAccepted}</p>}
                                 </div>
+
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -647,10 +800,11 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                         Next Step <ChevronRight size={20} />
                                     </button>
                                 ) : (
-                                    <button type="button" onClick={(e) => handleSubmit(e, 'Submitted')} disabled={loading || !formData.declarationAccepted} className="btn btn-primary px-10 flex items-center gap-2 bg-green-600 hover:bg-green-500 border-green-600 shadow-xl shadow-green-500/20">
+                                    <button type="button" onClick={(e) => handleSubmit(e, 'Submitted')} disabled={loading} className="btn btn-primary px-10 flex items-center gap-2 bg-green-600 hover:bg-green-500 border-green-600 shadow-xl shadow-green-500/20">
                                         {loading ? <Loader2 className="animate-spin" /> : <>Final Submission <CheckCircle size={20} /></>}
                                     </button>
                                 )}
+
                             </div>
                         </div>
                     )}

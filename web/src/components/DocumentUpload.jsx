@@ -18,6 +18,8 @@ const DocumentUpload = ({ application, setApplication }) => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [showPreviewModal, setShowPreviewModal] = useState(null);
+    const [errors, setErrors] = useState({});
+
 
 
     const handleFileChange = (e) => {
@@ -36,7 +38,29 @@ const DocumentUpload = ({ application, setApplication }) => {
 
     const handleUpload = async (e) => {
         e.preventDefault();
-        if (!files.resultSlip && !files.birthCertificate && !files.transcript && !files.passportPhoto) return;
+
+        const newErrors = {};
+        const requiredFields = [
+            { name: 'resultSlip', label: 'Result Slip 1', current: application?.resultSlip },
+            ...(application?.results?.sittings?.length >= 2 ? [{ name: 'resultSlip2', label: 'Result Slip 2', current: application?.resultSlip2 }] : []),
+            ...(application?.results?.sittings?.length >= 3 ? [{ name: 'resultSlip3', label: 'Result Slip 3', current: application?.resultSlip3 }] : []),
+            { name: 'birthCertificate', label: 'Birth Certificate', current: application?.birthCertificate },
+            { name: 'passportPhoto', label: 'Passport Photo', current: application?.passportPhoto }
+        ];
+
+        requiredFields.forEach(field => {
+            if (!files[field.name] && !field.current) {
+                newErrors[field.name] = `${field.label} is required`;
+            }
+        });
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setErrors({});
+
 
 
         setLoading(true);
@@ -93,7 +117,9 @@ const DocumentUpload = ({ application, setApplication }) => {
                                 <div>
                                     <p className="text-sm font-bold">{field.label} {field.required && <span className="text-red-500">*</span>}</p>
                                     {field.current && <p className="text-[10px] text-green-500 font-bold uppercase tracking-tighter">Already Uploaded ✓</p>}
+                                    {errors[field.name] && <p className="text-red-500 text-[10px] font-bold uppercase mt-1">{errors[field.name]}</p>}
                                 </div>
+
                             </div>
                             <div className="flex items-center gap-2">
                                 {files[field.name] && (
