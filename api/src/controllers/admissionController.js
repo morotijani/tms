@@ -1,4 +1,7 @@
 const { Application, Program, User } = require('../models');
+const fs = require('fs');
+const path = require('path');
+
 
 // @desc    Get all available programs
 // @route   GET /api/admission/programs
@@ -105,17 +108,45 @@ const uploadDocuments = async (req, res) => {
         }
 
         const updates = {};
-        if (req.files['resultSlip']) updates.resultSlip = `/uploads/${req.files['resultSlip'][0].filename}`;
-        if (req.files['resultSlip2']) updates.resultSlip2 = `/uploads/${req.files['resultSlip2'][0].filename}`;
-        if (req.files['resultSlip3']) updates.resultSlip3 = `/uploads/${req.files['resultSlip3'][0].filename}`;
-        if (req.files['birthCertificate']) updates.birthCertificate = `/uploads/${req.files['birthCertificate'][0].filename}`;
-        if (req.files['transcript']) updates.transcript = `/uploads/${req.files['transcript'][0].filename}`;
-        if (req.files['passportPhoto']) updates.passportPhoto = `/uploads/${req.files['passportPhoto'][0].filename}`;
+        const fields = ['resultSlip', 'resultSlip2', 'resultSlip3', 'birthCertificate', 'transcript', 'passportPhoto'];
+
+        fields.forEach(field => {
+            if (req.files[field]) {
+                // If old file exists, delete it
+                if (application[field]) {
+                    // Normalize path and remove leading slash to prevent join issues
+                    const relativePath = application[field].replace(/^\//, '');
+                    const oldPath = path.resolve(process.cwd(), relativePath);
+                    if (fs.existsSync(oldPath)) {
+                        try {
+                            fs.unlinkSync(oldPath);
+                        } catch (err) {
+                            console.error(`Error deleting old file ${oldPath}:`, err);
+                        }
+                    }
+                }
+
+                updates[field] = `/uploads/${req.files[field][0].filename}`;
+            }
+        });
+
 
 
         await application.update(updates);
 
-        res.json({ message: 'Documents uploaded successfully', application });
+        // Final: Re-fetch with associations to prevent bio-data loss in frontend
+        const fullApplication = await Application.findOne({
+            where: { id: application.id },
+            include: [
+                { model: User },
+                { model: Program, as: 'firstChoice' },
+                { model: Program, as: 'secondChoice' },
+                { model: Program, as: 'thirdChoice' }
+            ]
+        });
+
+        res.json({ message: 'Documents uploaded successfully', application: fullApplication });
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

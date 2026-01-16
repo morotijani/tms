@@ -21,6 +21,11 @@ const DocumentUpload = ({ application, setApplication }) => {
     const [errors, setErrors] = useState({});
 
 
+    let results = application?.results;
+    if (typeof results === 'string') {
+        try { results = JSON.parse(results); } catch (e) { results = { sittings: [] }; }
+    }
+    const sittingCount = results?.sittings?.length || 1;
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -28,12 +33,13 @@ const DocumentUpload = ({ application, setApplication }) => {
 
         setFiles(prev => ({ ...prev, [e.target.name]: file }));
 
-        if (file.type.startsWith('image/')) {
+        if (file.type.startsWith('image/') || file.type === 'application/pdf') {
             setPreviews(prev => ({ ...prev, [e.target.name]: URL.createObjectURL(file) }));
         } else {
             setPreviews(prev => ({ ...prev, [e.target.name]: 'file' }));
         }
     };
+
 
 
     const handleUpload = async (e) => {
@@ -42,11 +48,12 @@ const DocumentUpload = ({ application, setApplication }) => {
         const newErrors = {};
         const requiredFields = [
             { name: 'resultSlip', label: 'Result Slip 1', current: application?.resultSlip },
-            ...(application?.results?.sittings?.length >= 2 ? [{ name: 'resultSlip2', label: 'Result Slip 2', current: application?.resultSlip2 }] : []),
-            ...(application?.results?.sittings?.length >= 3 ? [{ name: 'resultSlip3', label: 'Result Slip 3', current: application?.resultSlip3 }] : []),
+            ...(sittingCount >= 2 ? [{ name: 'resultSlip2', label: 'Result Slip 2', current: application?.resultSlip2 }] : []),
+            ...(sittingCount >= 3 ? [{ name: 'resultSlip3', label: 'Result Slip 3', current: application?.resultSlip3 }] : []),
             { name: 'birthCertificate', label: 'Birth Certificate', current: application?.birthCertificate },
             { name: 'passportPhoto', label: 'Passport Photo', current: application?.passportPhoto }
         ];
+
 
         requiredFields.forEach(field => {
             if (!files[field.name] && !field.current) {
@@ -98,15 +105,23 @@ const DocumentUpload = ({ application, setApplication }) => {
                 </div>
             )}
 
+            {!application?.results?.sittings && (
+                <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 p-4 rounded-lg mb-8 text-sm">
+                    <strong>Note:</strong> Please save your progress in the Admission Form first to ensure the correct number of result slips are required.
+                </div>
+            )}
+
+
             <form onSubmit={handleUpload} className="space-y-6">
                 {[
                     { label: 'Result Slip - Sitting 1', name: 'resultSlip', current: application?.resultSlip, required: true },
-                    ...(application?.results?.sittings?.length >= 2 ? [{ label: 'Result Slip - Sitting 2', name: 'resultSlip2', current: application?.resultSlip2, required: true }] : []),
-                    ...(application?.results?.sittings?.length >= 3 ? [{ label: 'Result Slip - Sitting 3', name: 'resultSlip3', current: application?.resultSlip3, required: true }] : []),
+                    ...(sittingCount >= 2 ? [{ label: 'Result Slip - Sitting 2', name: 'resultSlip2', current: application?.resultSlip2, required: true }] : []),
+                    ...(sittingCount >= 3 ? [{ label: 'Result Slip - Sitting 3', name: 'resultSlip3', current: application?.resultSlip3, required: true }] : []),
                     { label: 'Birth Certificate', name: 'birthCertificate', current: application?.birthCertificate, required: true },
                     { label: 'Academic Transcript (Optional)', name: 'transcript', current: application?.transcript, required: false },
                     { label: 'Passport Size Picture', name: 'passportPhoto', current: application?.passportPhoto, required: true }
                 ].map((field, idx) => (
+
 
                     <div key={idx} className="p-4 bg-slate-900/50 border border-slate-800 rounded-2xl space-y-4">
                         <div className="flex items-center justify-between">
@@ -170,14 +185,20 @@ const DocumentUpload = ({ application, setApplication }) => {
                                 {files[showPreviewModal]?.type.startsWith('image/') ? (
                                     <img src={previews[showPreviewModal]} alt="Preview" className="max-w-full h-auto rounded-lg shadow-2xl" />
                                 ) : (
-                                    <div className="text-center space-y-4">
-                                        <File size={64} className="mx-auto text-blue-500" />
-                                        <p className="font-bold">PDF Document</p>
-                                        <p className="text-xs text-slate-500">{files[showPreviewModal]?.name}</p>
-                                        <p className="text-[10px] text-slate-600 uppercase tracking-widest italic">Preview not available for PDFs</p>
+                                    <div className="w-full h-full min-h-[500px] flex flex-col">
+                                        <iframe
+                                            src={previews[showPreviewModal]}
+                                            className="w-full h-full flex-1 rounded-lg border-none"
+                                            title="PDF Preview"
+                                        />
+                                        <div className="mt-4 text-center space-y-2">
+                                            <File size={32} className="mx-auto text-blue-500" />
+                                            <p className="font-bold text-sm">PDF Document Loaded</p>
+                                        </div>
                                     </div>
                                 )}
                             </div>
+
                             <div className="p-4 bg-slate-900 text-center border-t border-slate-800">
                                 <p className="text-xs font-bold text-slate-400">{files[showPreviewModal]?.name}</p>
                             </div>

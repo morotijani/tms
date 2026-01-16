@@ -301,13 +301,21 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                             <section>
                                 <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-4 border-b border-slate-100 pb-2">Personal Details</h3>
                                 <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Full Name</p><p className="font-bold uppercase text-sm">{formData.firstName} {formData.otherNames} {formData.lastName}</p></div>
-                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Email</p><p className="font-bold text-sm">{formData.email}</p></div>
-                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Phone</p><p className="font-bold text-sm">{formData.phoneNumber}</p></div>
-                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Gender / DOB</p><p className="font-bold text-sm">{formData.gender} / {formData.dateOfBirth}</p></div>
-                                    <div className="col-span-2"><p className="text-[10px] font-bold text-slate-400 uppercase">Address</p><p className="font-bold text-sm">{formData.homeAddress}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Full Name</p><p className="font-bold uppercase text-sm">{formData.firstName || 'N/A'} {formData.otherNames} {formData.lastName || 'N/A'}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Email</p><p className="font-bold text-sm">{formData.email || 'N/A'}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Phone</p><p className="font-bold text-sm">{formData.phoneNumber || 'N/A'}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Gender / DOB</p><p className="font-bold text-sm">{formData.gender || 'N/A'} / {formData.dateOfBirth || 'N/A'}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Place of Birth / Religion</p><p className="font-bold text-sm uppercase">{formData.placeOfBirth || 'N/A'} / {formData.religion || 'N/A'}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Hometown / Region</p><p className="font-bold text-sm uppercase">{formData.hometown || 'N/A'} / {formData.region || 'N/A'}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">District / GPS Address</p><p className="font-bold text-sm uppercase">{formData.district || 'N/A'} / {formData.ghanaPostGps || 'N/A'}</p></div>
+                                    <div><p className="text-[10px] font-bold text-slate-400 uppercase">Marital Status</p><p className="font-bold text-sm uppercase">{formData.maritalStatus || 'N/A'}</p></div>
+                                    <div className="col-span-1"><p className="text-[10px] font-bold text-slate-400 uppercase">Home Address</p><p className="font-bold text-sm uppercase">{formData.homeAddress || 'N/A'}</p></div>
+                                    <div className="col-span-1"><p className="text-[10px] font-bold text-slate-400 uppercase">Postal Address</p><p className="font-bold text-sm uppercase">{formData.postalAddress || 'N/A'}</p></div>
+                                    <div className="col-span-2"><p className="text-[10px] font-bold text-slate-400 uppercase">Languages Spoken</p><p className="font-bold text-sm uppercase">{formData.languagesSpoken || 'N/A'}</p></div>
                                 </div>
                             </section>
+
+
 
                             <section>
                                 <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-4 border-b border-slate-100 pb-2">Program Choices</h3>
@@ -332,28 +340,37 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                         <div className="space-y-8 border-l border-slate-100 pl-8">
                             <section>
                                 <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Guardian Info</h3>
-                                <p className="font-bold text-sm uppercase mb-1">{formData.guardianName}</p>
-                                <p className="text-xs text-slate-500 mb-4">{formData.guardianOccupation}</p>
-                                <p className="text-xs font-mono">{formData.guardianContact}</p>
+                                <p className="font-bold text-sm uppercase mb-1">{formData.guardianName || 'N/A'}</p>
+                                <p className="text-xs text-slate-500 mb-1">{formData.guardianOccupation || 'N/A'}</p>
+                                <p className="text-xs text-slate-500 mb-4">{formData.guardianAddress || 'N/A'}</p>
+                                <p className="text-xs font-mono">{formData.guardianContact || 'N/A'}</p>
                             </section>
+
                             <section>
                                 <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Referee</h3>
-                                <p className="font-bold text-sm uppercase mb-1">{formData.refereeName}</p>
-                                <p className="text-xs text-slate-500">{formData.refereeContact}</p>
+                                <p className="font-bold text-sm uppercase mb-1">{formData.refereeName || 'N/A'}</p>
+                                <p className="text-xs text-slate-500 mb-1">{formData.refereeAddress || 'N/A'}</p>
+                                <p className="text-xs font-mono">{formData.refereeContact || 'N/A'}</p>
                             </section>
                         </div>
+
                     </div>
 
                     <section className="mb-12">
                         <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-4 border-b border-slate-100 pb-2">Academic History</h3>
-                        <p className="text-xs font-bold mb-4 uppercase">{formData.secondarySchoolName} ({formData.secondarySchoolStartYear} - {formData.secondarySchoolEndYear})</p>
+                        <p className="text-xs font-bold mb-4 uppercase">{formData.secondarySchoolName || 'N/A'} ({formData.secondarySchoolStartYear || 'N/A'} - {formData.secondarySchoolEndYear || 'N/A'})</p>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {formData.results.sittings.map((sit, idx) => (
                                 <div key={idx} className="border border-slate-100 p-4 rounded-xl">
                                     <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
-                                        <span className="text-[10px] font-black uppercase">Sitting {idx + 1}</span>
-                                        <span className="text-[10px] font-black">{sit.year}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black uppercase">Sitting {idx + 1} ({sit.year || 'N/A'})</span>
+                                            <span className="text-[8px] text-slate-400 font-bold uppercase">Index No: {sit.indexNo || 'N/A'}</span>
+                                        </div>
+                                        <span className="text-[10px] font-black">Agg: {sit.aggregate || 'N/A'}</span>
                                     </div>
+
                                     <div className="space-y-1">
                                         {Object.entries(sit.core).map(([subj, grade]) => (
                                             <div key={subj} className="flex justify-between text-[10px] uppercase font-bold">
