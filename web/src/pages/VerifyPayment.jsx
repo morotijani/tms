@@ -6,9 +6,13 @@ import { CheckCircle, XCircle, Loader2, Copy, FileText, Home, AlertCircle, Arrow
 import { motion } from 'framer-motion';
 
 import ThemeToggle from '../components/ThemeToggle';
+import { useSettings } from '../context/SettingsContext';
+
 
 const VerifyPayment = () => {
+    const { settings } = useSettings();
     const [searchParams] = useSearchParams();
+
     const reference = searchParams.get('reference');
     const [status, setStatus] = useState('loading');
     const [voucher, setVoucher] = useState(null);
@@ -86,7 +90,8 @@ const VerifyPayment = () => {
                             <CheckCircle size={32} />
                         </div>
                         <h2 className="text-2xl font-bold font-heading">Payment Successful!</h2>
-                        <p className="text-text-muted">Your admission voucher has been generated successfully. Please save these details to start your application.</p>
+                        <p className="text-text-muted">Your {settings.schoolAbbreviation || 'GUMS'} admission voucher has been generated successfully. Please save these details to start your application.</p>
+
 
                         <div className="space-y-4 pt-4">
                             <div className="p-6 bg-surface rounded-2xl border border-border text-left relative overflow-hidden group shadow-sm">

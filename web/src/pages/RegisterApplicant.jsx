@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
 import ThemeToggle from '../components/ThemeToggle';
+import { useSettings } from '../context/SettingsContext';
+
 
 const RegisterApplicant = () => {
     const [formData, setFormData] = useState({
@@ -20,7 +22,9 @@ const RegisterApplicant = () => {
     const [error, setError] = useState('');
 
     const { registerApplicant } = useAuth();
+    const { settings } = useSettings();
     const navigate = useNavigate();
+
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -52,10 +56,17 @@ const RegisterApplicant = () => {
                 className="glass-card w-full max-w-2xl p-8 border border-border"
             >
                 <div className="text-center mb-8">
-                    <GraduationCap size={48} className="text-primary mx-auto mb-4" />
-                    <h1 className="text-3xl font-bold font-heading">Application Portal</h1>
-                    <p className="text-text-muted">Enter your voucher details to create your account</p>
+                    {settings.schoolLogo ? (
+                        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-border bg-white flex items-center justify-center p-2 mx-auto mb-4">
+                            <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
+                        </div>
+                    ) : (
+                        <GraduationCap size={48} className="text-primary mx-auto mb-4" />
+                    )}
+                    <h1 className="text-3xl font-bold font-heading">{settings.schoolName || 'Ghana University Management System'}</h1>
+                    <p className="text-text-muted">Enter your voucher details to initialize your application</p>
                 </div>
+
 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded-lg mb-6 text-sm font-medium">

@@ -11,16 +11,15 @@ const LandingPage = () => {
         <div className="bg-background min-h-screen text-text overflow-x-hidden transition-colors duration-300">
             {/* Navigation */}
             <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 overflow-hidden">
                     {settings.schoolLogo ? (
-                        <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center">
-                            <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
-                        </div>
+                        <img src={`http://localhost:5000${settings.schoolLogo}`} alt="Logo" className="w-8 h-8 object-contain shrink-0" />
                     ) : (
-                        <GraduationCap className="text-primary" size={32} />
+                        <GraduationCap className="text-primary shrink-0" size={28} />
                     )}
-                    <span className="text-2xl font-bold font-heading">{settings.schoolAbbreviation || 'GUMS'}</span>
+                    <span className="text-xl sm:text-2xl font-bold font-heading truncate">{settings.schoolAbbreviation || 'GUMS'}</span>
                 </div>
+
 
                 <div className="flex gap-4 items-center">
                     <Link to="/login" className="hover:text-primary transition-colors hidden sm:block">Staff Login</Link>
@@ -37,12 +36,13 @@ const LandingPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                    <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
                         The Future of <span className="text-primary">Learning</span> in Ghana.
                     </h1>
-                    <p className="text-xl text-text-muted max-w-2xl mx-auto mb-10">
-                        A comprehensive, digital-first University Management System designed for the modern Ghanaian student and staff. Experience seamless admissions, grading, and financials.
+                    <p className="text-base sm:text-lg md:text-xl text-text-muted max-w-2xl mx-auto mb-10 px-4 md:px-0">
+                        A comprehensive, digital-first University Management System designed for the modern Ghanaian student and staff.
                     </p>
+
 
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Link to="/purchase-voucher" className="btn btn-primary px-10 py-4 text-lg">

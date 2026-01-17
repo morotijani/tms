@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
-import { Layout, FileText, Upload, CheckCircle, Clock, AlertCircle, LogOut, Bell } from 'lucide-react';
+import { Layout, FileText, Upload, CheckCircle, Clock, AlertCircle, LogOut, Bell, Menu, X } from 'lucide-react';
+
 
 import AdmissionForm from '../components/AdmissionForm';
 import DocumentUpload from '../components/DocumentUpload';
@@ -17,6 +18,8 @@ const ApplicantDashboard = () => {
     const [application, setApplication] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('status');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
 
     useEffect(() => {
         const fetchApplication = async () => {
@@ -56,8 +59,46 @@ const ApplicantDashboard = () => {
 
     return (
         <div className="bg-background min-h-screen text-text flex font-sans transition-colors duration-300">
+            {/* Mobile Header */}
+            <header className="md:hidden fixed top-0 left-0 right-0 bg-surface/80 backdrop-blur-lg border-b border-border z-40 p-4 flex justify-between items-center transition-colors duration-300">
+                <div className="flex items-center gap-2">
+                    {settings.schoolLogo ? (
+                        <img src={`http://localhost:5000${settings.schoolLogo}`} alt="Logo" className="w-8 h-8 object-contain" />
+                    ) : (
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-bold text-white">
+                            {settings.schoolAbbreviation?.charAt(0) || 'A'}
+                        </div>
+                    )}
+                    <span className="font-bold font-heading">{settings.schoolAbbreviation || 'GUMS'}</span>
+                </div>
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 hover:bg-surface rounded-lg transition-colors"
+                >
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </header>
+
+            {/* Sidebar Overlay */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+                    />
+                )}
+            </AnimatePresence>
+
             {/* Sidebar */}
-            <aside className="w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/30 backdrop-blur-xl sticky top-0 h-screen">
+            <aside className={`
+                fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
+                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen sticky top-0
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}>
+
                 <div className="flex items-center gap-3">
                     {settings.schoolLogo ? (
                         <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-white flex items-center justify-center p-1">
@@ -78,12 +119,16 @@ const ApplicantDashboard = () => {
                     {navItems.map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => {
+                                setActiveTab(item.id);
+                                setIsMobileMenuOpen(false);
+                            }}
                             className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeTab === item.id
                                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
                                 : 'text-text-muted hover:bg-surface hover:text-text'
                                 }`}
                         >
+
                             <item.icon size={20} />
                             <span className="font-medium">{item.label}</span>
                         </button>
@@ -103,13 +148,17 @@ const ApplicantDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-8 overflow-y-auto">
-                <header className="flex justify-between items-center mb-10">
+            <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 transition-all duration-300">
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+
                     <div>
                         <h1 className="text-3xl font-bold font-heading text-text capitalize">
                             {activeTab} Portal
                         </h1>
-                        <p className="text-text-muted mt-1 px-3 py-1 bg-surface border border-border rounded-full inline-block text-[10px] font-bold uppercase tracking-widest">Admissions 2024/2025</p>
+                        <p className="text-text-muted mt-1 px-3 py-1 bg-surface border border-border rounded-full inline-block text-[10px] font-bold uppercase tracking-widest">
+                            Admissions {new Date().getFullYear()}/{new Date().getFullYear() + 1}
+                        </p>
+
                     </div>
                     <div className="flex gap-4">
                         <button className="w-12 h-12 glass-card flex items-center justify-center text-text-muted hover:text-text transition-colors relative border-border hover:border-primary/50 shadow-none">
@@ -173,7 +222,8 @@ const ApplicantDashboard = () => {
                                             <CheckCircle size={120} />
                                         </div>
                                         <h4 className="font-black text-2xl mb-4 text-success uppercase tracking-tighter">Congratulations!</h4>
-                                        <p className="text-text-muted mb-8 leading-relaxed">You have been offered admission to GUMS. Your journey towards academic excellence begins now. Download your official admission letter below.</p>
+                                        <p className="text-text-muted mb-8 leading-relaxed">You have been offered admission to {settings.schoolName || 'Ghana University Management System'}. Your journey towards academic excellence begins now. Download your official admission letter below.</p>
+
                                         <a
                                             href={`http://localhost:5000${application.admissionLetter}`}
                                             target="_blank"

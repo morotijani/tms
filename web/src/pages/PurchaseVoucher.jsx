@@ -4,9 +4,13 @@ import { CreditCard, Mail, ArrowRight, Loader2, ShieldCheck, Smartphone } from '
 import { motion } from 'framer-motion';
 
 import ThemeToggle from '../components/ThemeToggle';
+import { useSettings } from '../context/SettingsContext';
+
 
 const PurchaseVoucher = () => {
+    const { settings } = useSettings();
     const [email, setEmail] = useState('');
+
     const [voucherType, setVoucherType] = useState('Undergraduate');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -58,11 +62,13 @@ const PurchaseVoucher = () => {
                         <Smartphone size={14} /> Mobile Money Supported
                     </div>
                     <h1 className="text-4xl md:text-5xl font-bold font-heading leading-tight">
-                        Start Your <span className="text-primary">Journey</span> Today.
+                        Start Your <span className="text-primary">Journey</span> at {settings.schoolAbbreviation || 'GUMS'}.
                     </h1>
+
                     <p className="text-text-muted text-lg">
-                        Purchase your admission voucher instantly via Paystack. Supports MTN MoMo, Telecel Cash, AT Money, and Bank Cards.
+                        Purchase your admission voucher instantly via Paystack. Join {settings.schoolName || 'Ghana University Management System'} today.
                     </p>
+
 
                     <div className="space-y-4">
                         <div className="flex gap-4 items-start">

@@ -4,8 +4,9 @@ import axios from 'axios';
 import {
     Layout, BookOpen, Users, ClipboardCheck,
     LogOut, User as UserIcon, Bell, ChevronRight,
-    PlusCircle, FileText
+    PlusCircle, FileText, Menu, X
 } from 'lucide-react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from '../components/ThemeToggle';
 import GradeEntry from '../components/GradeEntry';
@@ -21,6 +22,8 @@ const StaffDashboard = () => {
     const [courses, setCourses] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
 
 
     const refreshData = async () => {
@@ -51,9 +54,46 @@ const StaffDashboard = () => {
 
     return (
         <div className="bg-background min-h-screen text-text flex font-sans transition-colors duration-300">
+            {/* Mobile Header */}
+            <header className="md:hidden fixed top-0 left-0 right-0 bg-surface/80 backdrop-blur-lg border-b border-border z-40 p-4 flex justify-between items-center transition-colors duration-300">
+                <div className="flex items-center gap-2">
+                    {settings.schoolLogo ? (
+                        <img src={`http://localhost:5000${settings.schoolLogo}`} alt="Logo" className="w-8 h-8 object-contain" />
+                    ) : (
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-bold text-white">
+                            {settings.schoolAbbreviation?.charAt(0) || 'S'}
+                        </div>
+                    )}
+                    <span className="font-bold font-heading">{settings.schoolAbbreviation || 'GUMS'}</span>
+                </div>
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 hover:bg-surface rounded-lg transition-colors"
+                >
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </header>
+
+            {/* Sidebar Overlay */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+                    />
+                )}
+            </AnimatePresence>
 
             {/* Sidebar */}
-            <aside className="w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/30 backdrop-blur-xl sticky top-0 h-screen">
+            <aside className={`
+                fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
+                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen sticky top-0
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}>
+
                 <div className="flex items-center gap-3">
                     {settings.schoolLogo ? (
                         <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-white flex items-center justify-center p-1">
@@ -75,12 +115,16 @@ const StaffDashboard = () => {
                     {navItems.map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => {
+                                setActiveTab(item.id);
+                                setIsMobileMenuOpen(false);
+                            }}
                             className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeTab === item.id
                                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
                                 : 'text-text-muted hover:bg-surface hover:text-text'
                                 }`}
                         >
+
 
                             {item.icon}
                             <span className="font-medium">{item.label}</span>
@@ -113,8 +157,9 @@ const StaffDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-8 overflow-y-auto">
-                <header className="flex justify-between items-center mb-10">
+            <main className="flex-1 p-4 md:p-10 pt-20 md:pt-10 transition-all duration-300">
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+
                     <div>
                         <h1 className="text-3xl font-bold font-heading text-text">
                             {activeTab === 'overview' && 'Staff Overview'}

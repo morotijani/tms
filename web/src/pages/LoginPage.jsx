@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
 import ThemeToggle from '../components/ThemeToggle';
+import { useSettings } from '../context/SettingsContext';
+
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -13,7 +15,9 @@ const LoginPage = () => {
     const [error, setError] = useState('');
 
     const { login } = useAuth();
+    const { settings } = useSettings();
     const navigate = useNavigate();
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -48,11 +52,18 @@ const LoginPage = () => {
             >
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
-                        <GraduationCap size={48} className="text-primary" />
+                        {settings.schoolLogo ? (
+                            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-border bg-white flex items-center justify-center p-2">
+                                <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
+                            </div>
+                        ) : (
+                            <GraduationCap size={48} className="text-primary" />
+                        )}
                     </div>
                     <h1 className="text-3xl font-bold font-heading mb-2">Welcome Back</h1>
-                    <p className="text-text-muted">Login to your GUMS account</p>
+                    <p className="text-text-muted">Login to your {settings.schoolAbbreviation || 'GUMS'} account</p>
                 </div>
+
 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded-lg mb-6 text-sm">

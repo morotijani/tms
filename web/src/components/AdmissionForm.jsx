@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { Save, Loader2, ChevronRight, ChevronLeft, CheckCircle, User, GraduationCap, Users, FileCheck, Plus, Trash2, Printer, ExternalLink, FileText } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
+
 
 
 
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AdmissionForm = ({ application, setApplication, readonly = false, onDocClick = null }) => {
+    const { settings } = useSettings();
     const currentYear = new Date().getFullYear();
+
     const yearOptions = Array.from({ length: 46 }, (_, i) => currentYear - i); // Last 45 years + current
 
     const [step, setStep] = useState(1);
@@ -286,11 +290,17 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                 <div className="bg-white text-slate-900 p-12 rounded-2xl shadow-2xl print:shadow-none print:p-0 min-h-[297mm]">
                     <div className="flex justify-between items-start border-b-4 border-slate-900 pb-8 mb-8">
                         <div>
-                            <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">University Application</h1>
-                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Academic Year 2025/2026</p>
+                            <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">{settings.schoolName || 'University Application'}</h1>
+                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Academic Year {currentYear}/{currentYear + 1}</p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex items-start gap-4">
+                            {settings.schoolLogo && (
+                                <div className="w-32 h-32 rounded-xl border-2 border-slate-200 flex items-center justify-center overflow-hidden p-2">
+                                    <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
+                                </div>
+                            )}
                             <div className="w-32 h-32 bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center overflow-hidden">
+
                                 {application?.passportPhoto ? (
                                     <img src={application.passportPhoto.startsWith('http') ? application.passportPhoto : `http://localhost:5000${application.passportPhoto.startsWith('/') ? '' : '/'}${application.passportPhoto}`} alt="Passport" className="w-full h-full object-cover" />
                                 ) : (
@@ -301,8 +311,9 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-12 mb-12">
-                        <div className="col-span-2 space-y-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-12">
+                        <div className="lg:col-span-2 space-y-8">
+
                             <section>
                                 <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-4 border-b border-slate-100 pb-2">Personal Details</h3>
                                 <div className="grid grid-cols-2 gap-y-4 gap-x-8">
@@ -342,7 +353,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                             </section>
                         </div>
 
-                        <div className="space-y-8 border-l border-slate-100 pl-8">
+                        <div className="space-y-8 border-t lg:border-t-0 lg:border-l border-slate-100 pt-8 lg:pt-0 lg:pl-8">
+
                             <section>
                                 <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Guardian Info</h3>
                                 <p className="font-bold text-sm uppercase mb-1">{formData.guardianName || 'N/A'}</p>
@@ -397,7 +409,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
                     <section className="mb-12 print:hidden">
                         <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-4 border-b border-slate-100 pb-2">Documents & Attachments</h3>
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
                             {[
                                 { label: 'Result Slip 1', path: application?.resultSlip },
                                 { label: 'Result Slip 2', path: application?.resultSlip2 },
@@ -432,12 +445,13 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                     </section>
 
 
-                    <footer className="mt-auto pt-12 border-t border-slate-100 text-[10px] flex justify-between items-end">
+                    <footer className="mt-auto pt-12 border-t border-slate-100 text-[10px] flex flex-col md:flex-row justify-between items-center md:items-end gap-6 text-center md:text-left">
                         <div className="max-w-md">
                             <p className="font-black uppercase mb-2">Declaration</p>
                             <p className="text-slate-400 leading-relaxed italic">I hereby declare that all information provided is true to the best of my knowledge. I understand that any false declaration may lead to disqualification.</p>
                         </div>
-                        <div className="text-right">
+                        <div className="md:text-right">
+
                             <div className="w-48 border-b border-slate-900 mb-2"></div>
                             <p className="font-black uppercase italic">Applicant Signature</p>
                         </div>
@@ -451,17 +465,18 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
     return (
         <div className="max-w-5xl mx-auto py-10 px-4 animate-fade-in">
             {/* Stepper Header */}
-            <div className="flex justify-between items-center mb-12 relative">
-                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 z-0"></div>
+            <div className="flex justify-between items-center mb-12 relative px-2">
+                <div className="absolute top-5 left-4 right-4 h-0.5 bg-border z-0"></div>
                 {steps.map((s) => (
-                    <div key={s.id} className="relative z-10 flex flex-col items-center gap-2">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step >= s.id ? 'bg-primary border-primary text-white' : 'bg-surface border-border text-text-muted'}`}>
+                    <div key={s.id} className="relative z-10 flex flex-col items-center gap-2 flex-1">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step >= s.id ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted'}`}>
                             {step > s.id ? <CheckCircle size={20} /> : s.icon}
                         </div>
-                        <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${step >= s.id ? 'text-primary' : 'text-text-muted'}`}>{s.label}</span>
+                        <span className={`text-[8px] sm:text-xs font-bold uppercase tracking-widest text-center max-w-[60px] sm:max-w-none ${step >= s.id ? 'text-primary' : 'text-text-muted hidden sm:block'}`}>{s.label}</span>
                     </div>
                 ))}
             </div>
+
 
 
             {success && (
@@ -479,7 +494,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                 <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">Personal Details</h2>
 
 
-                                <div className="grid md:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
                                     <div className="form-group">
                                         <label className="label">First Name</label>
                                         <input name="firstName" value={formData.firstName} onChange={handleChange} className={`input-field ${errors.firstName ? 'border-red-500' : ''}`} placeholder="Kofi" rotate={0} />
@@ -496,7 +512,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-4 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+
                                     <div className="form-group">
                                         <label className="label">Date of Birth</label>
                                         <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className={`input-field ${errors.dateOfBirth ? 'border-red-500' : ''}`} rotate={0} />
@@ -525,7 +542,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
                                     <div className="form-group">
                                         <label className="label">Place of Birth</label>
                                         <input name="placeOfBirth" value={formData.placeOfBirth} onChange={handleChange} className="input-field" placeholder="Accra" />
@@ -545,7 +563,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
                                 </div>
 
-                                <div className="grid md:grid-cols-2 gap-6 pt-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+
                                     <div className="form-group">
                                         <label className="label">Permanent Home Address</label>
                                         <input name="homeAddress" value={formData.homeAddress} onChange={handleChange} className="input-field" placeholder="House No. 123, Street Name" />
@@ -556,7 +575,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-border">
+
 
 
                                     <div className="form-group">
@@ -578,7 +598,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
                                 <h3 className="text-xl font-bold pt-6 text-primary">Parent or Guardian Information</h3>
 
-                                <div className="grid md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
                                     <div className="form-group">
                                         <label className="label">Full Name</label>
                                         <input name="guardianName" value={formData.guardianName} onChange={handleChange} className="input-field" />
@@ -613,7 +634,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                 </div>
 
 
-                                <div className="grid md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
                                     <div className="form-group">
                                         <label className="label">Secondary School Attended</label>
                                         <input name="secondarySchoolName" value={formData.secondarySchoolName} onChange={handleChange} className={`input-field ${errors.secondarySchoolName ? 'border-red-500' : ''}`} placeholder="Prempeh College" rotate={0} />
@@ -859,8 +881,9 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
             </div>
 
             <p className="text-center text-slate-500 text-xs mt-8">
-                © 2026 Ghana University Management System. Secure Digital Application Portal.
+                © {currentYear} {settings.schoolName || 'Ghana University Management System'}. Secure Digital Application Portal.
             </p>
+
         </div>
     );
 };
