@@ -452,16 +452,17 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
         <div className="max-w-5xl mx-auto py-10 px-4 animate-fade-in">
             {/* Stepper Header */}
             <div className="flex justify-between items-center mb-12 relative">
-                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-800 -translate-y-1/2 z-0"></div>
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 z-0"></div>
                 {steps.map((s) => (
                     <div key={s.id} className="relative z-10 flex flex-col items-center gap-2">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step >= s.id ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-950 border-slate-800 text-slate-500'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step >= s.id ? 'bg-primary border-primary text-white' : 'bg-surface border-border text-text-muted'}`}>
                             {step > s.id ? <CheckCircle size={20} /> : s.icon}
                         </div>
-                        <span className={`text-xs font-bold uppercase tracking-wider ${step >= s.id ? 'text-blue-500' : 'text-slate-500'}`}>{s.label}</span>
+                        <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${step >= s.id ? 'text-primary' : 'text-text-muted'}`}>{s.label}</span>
                     </div>
                 ))}
             </div>
+
 
             {success && (
                 <div className="bg-green-500/10 border border-green-500 text-green-500 p-4 rounded-lg mb-8 text-center flex items-center justify-center gap-2">
@@ -469,12 +470,14 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                 </div>
             )}
 
-            <div className="glass-card p-10 border-slate-800 bg-slate-900/40">
+            <div className="glass-card p-6 sm:p-10 border-border bg-surface/50">
+
                 <form onSubmit={handleSubmit}>
                     <AnimatePresence mode="wait">
                         {step === 1 && (
                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} key="step1" className="space-y-8">
-                                <h2 className="text-2xl font-bold border-l-4 border-blue-600 pl-4">Personal Details</h2>
+                                <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">Personal Details</h2>
+
 
                                 <div className="grid md:grid-cols-3 gap-6">
                                     <div className="form-group">
@@ -553,7 +556,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-slate-800">
+                                <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-border">
+
 
                                     <div className="form-group">
                                         <label className="label">Languages Spoken</label>
@@ -572,7 +576,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                 </div>
 
 
-                                <h3 className="text-xl font-bold pt-6 text-blue-500">Parent or Guardian Information</h3>
+                                <h3 className="text-xl font-bold pt-6 text-primary">Parent or Guardian Information</h3>
+
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="form-group">
                                         <label className="label">Full Name</label>
@@ -596,7 +601,17 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
                         {step === 2 && (
                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} key="step2" className="space-y-8">
-                                <h2 className="text-2xl font-bold border-l-4 border-blue-600 pl-4">Educational Background</h2>
+                                <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">Educational Background</h2>
+                                <div className="p-6 bg-primary/5 border border-primary/10 rounded-2xl flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-primary/20 text-primary rounded-xl flex items-center justify-center shrink-0">
+                                        <GraduationCap size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold">Provide Your Academic History</p>
+                                        <p className="text-xs text-text-muted">Enter details of your secondary education and examination results.</p>
+                                    </div>
+                                </div>
+
 
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="form-group">
@@ -629,16 +644,18 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
 
                                 <div className="flex justify-between items-center pt-6 mb-4">
-                                    <h3 className="text-xl font-bold text-blue-500">WASSCE / SSCE Results</h3>
+                                    <h3 className="text-xl font-bold text-primary">WASSCE / SSCE Results</h3>
                                     {formData.results.sittings.length < 3 && (
-                                        <button type="button" onClick={addSitting} className="btn bg-blue-600/10 text-blue-500 text-xs py-2 px-4 rounded-xl flex items-center gap-2 font-bold hover:bg-blue-600 hover:text-white transition-all">
+                                        <button type="button" onClick={addSitting} className="btn bg-primary/10 text-primary text-xs py-2 px-4 rounded-xl flex items-center gap-2 font-bold hover:bg-primary hover:text-white transition-all">
                                             <Plus size={16} /> Add Sitting
                                         </button>
                                     )}
                                 </div>
 
+
                                 {formData.results.sittings.map((sit, sIdx) => (
-                                    <div key={sIdx} className="p-6 bg-slate-950/50 rounded-2xl border border-slate-800 space-y-6 relative group">
+                                    <div key={sIdx} className="p-6 bg-surface/50 rounded-2xl border border-border space-y-6 relative group">
+
                                         {formData.results.sittings.length > 1 && (
                                             <button
                                                 type="button"
@@ -648,7 +665,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                                 <Trash2 size={14} />
                                             </button>
                                         )}
-                                        <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                                        <div className="flex justify-between items-center border-b border-border pb-3">
+
 
                                             <span className="text-sm font-black text-slate-500 uppercase tracking-tighter">Sitting {sIdx + 1}</span>
                                             <div className="flex gap-4">
@@ -719,19 +737,22 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
                         {step === 3 && (
                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} key="step3" className="space-y-8">
-                                <h2 className="text-2xl font-bold border-l-4 border-blue-600 pl-4">Program Selection</h2>
-                                <p className="text-slate-400">Please select three programs in order of preference.</p>
+                                <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">Program Selection</h2>
+                                <p className="text-text-muted">Please select three programs in order of preference.</p>
+
 
                                 <div className="space-y-6">
-                                    <div className="form-group pb-4 border-b border-slate-800/50">
-                                        <label className="label text-blue-500 uppercase tracking-widest text-[10px]">First Choice</label>
+                                    <div className="form-group pb-4 border-b border-border/50">
+                                        <label className="label text-primary uppercase tracking-widest text-[10px]">First Choice</label>
+
                                         <select name="firstChoiceId" value={formData.firstChoiceId} onChange={handleChange} className={`input-field text-lg font-bold ${errors.firstChoiceId ? 'border-red-500' : ''}`}>
                                             <option value="">Select Primary Program</option>
                                             {programs.map(p => <option key={p.id} value={p.id}>{p.name} ({p.level})</option>)}
                                         </select>
                                         {errors.firstChoiceId && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.firstChoiceId}</p>}
                                     </div>
-                                    <div className="form-group pb-4 border-b border-slate-800/50">
+                                    <div className="form-group pb-4 border-b border-border/50">
+
                                         <label className="label uppercase tracking-widest text-[10px]">Second Choice</label>
                                         <select name="secondChoiceId" value={formData.secondChoiceId} onChange={handleChange} className={`input-field text-lg ${errors.secondChoiceId ? 'border-red-500' : ''}`}>
                                             <option value="">Select Secondary Program</option>
@@ -747,18 +768,20 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                         </select>
                                         {errors.thirdChoiceId && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.thirdChoiceId}</p>}
                                     </div>
-
                                 </div>
                             </motion.div>
                         )}
 
+
                         {step === 4 && (
                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} key="step4" className="space-y-8">
-                                <h2 className="text-2xl font-bold border-l-4 border-blue-600 pl-4">Referee & Declaration</h2>
+                                <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">Referee & Declaration</h2>
 
-                                <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-xl text-sm italic text-slate-400">
+
+                                <div className="p-6 bg-primary/5 border border-primary/20 rounded-xl text-sm italic text-text-muted">
                                     NB: Referee must be a Doctor, Senior Police / Army Officer, Head of Institution, or Reverend Minister / Clergy.
                                 </div>
+
 
                                 <div className="grid md:grid-cols-1 gap-6">
                                     <div className="form-group">
@@ -778,18 +801,19 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                     </div>
                                 </div>
 
-                                <div className="pt-8 border-t border-slate-800">
+                                <div className="pt-8 border-t border-border">
                                     <h3 className="text-lg font-bold mb-4 uppercase tracking-tighter">Declaration</h3>
                                     <label className="flex items-start gap-4 cursor-pointer group">
                                         <div className="pt-1">
-                                            <input type="checkbox" checked={formData.declarationAccepted} onChange={(e) => setFormData({ ...formData, declarationAccepted: e.target.checked })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500" />
+                                            <input type="checkbox" checked={formData.declarationAccepted} onChange={(e) => setFormData({ ...formData, declarationAccepted: e.target.checked })} className="w-5 h-5 rounded border-border bg-surface text-primary focus:ring-primary" />
                                         </div>
-                                        <p className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">
+                                        <p className="text-sm text-text-muted group-hover:text-text transition-colors">
                                             I hereby declare that the information given above is true and accurate to the best of my knowledge. I understand that any false information provided may lead to my disqualification or dismissal if already admitted.
                                         </p>
                                     </label>
                                     {errors.declarationAccepted && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase">{errors.declarationAccepted}</p>}
                                 </div>
+
 
                             </motion.div>
                         )}
@@ -797,28 +821,28 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
                     {/* Navigation Buttons */}
                     {!readonly && (
-                        <div className="flex justify-between items-center mt-12 pt-8 border-t border-slate-800">
+                        <div className="flex justify-between items-center mt-12 pt-8 border-t border-border">
                             <button
                                 type="button"
                                 onClick={prevStep}
                                 disabled={step === 1 || loading}
-                                className={`btn flex items-center gap-2 ${step === 1 ? 'opacity-0 pointer-events-none' : 'bg-slate-800 hover:bg-slate-700 text-white'}`}
+                                className={`btn flex items-center gap-2 ${step === 1 ? 'opacity-0 pointer-events-none' : 'bg-surface hover:bg-surface-hover text-text border border-border'}`}
                             >
                                 <ChevronLeft size={20} /> Previous
                             </button>
 
                             <div className="flex gap-4">
-                                <button type="button" onClick={(e) => handleSubmit(e, 'Draft')} disabled={loading} className="btn bg-slate-800 hover:bg-green-600/20 text-green-500 border border-green-500/20 flex items-center gap-2">
+                                <button type="button" onClick={(e) => handleSubmit(e, 'Draft')} disabled={loading} className="btn bg-surface hover:bg-primary/10 text-primary border border-primary/20 flex items-center gap-2">
                                     {loading ? <Loader2 className="animate-spin" /> : <><Save size={18} /> Save Progress</>}
                                 </button>
 
-                                <button type="button" onClick={() => setShowPreview(true)} className="btn bg-slate-800 hover:bg-slate-700 text-white px-4 flex items-center gap-2">
+                                <button type="button" onClick={() => setShowPreview(true)} className="btn bg-surface hover:bg-surface-hover text-text border border-border px-4 flex items-center gap-2">
                                     <FileCheck size={18} /> Preview
                                 </button>
 
 
                                 {step < 4 ? (
-                                    <button type="button" onClick={nextStep} className="btn btn-primary px-8 flex items-center gap-2 shadow-xl shadow-blue-500/20">
+                                    <button type="button" onClick={nextStep} className="btn btn-primary px-8 flex items-center gap-2 shadow-xl shadow-primary/20">
                                         Next Step <ChevronRight size={20} />
                                     </button>
                                 ) : (
@@ -826,9 +850,9 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                         {loading ? <Loader2 className="animate-spin" /> : <>Final Submission <CheckCircle size={20} /></>}
                                     </button>
                                 )}
-
                             </div>
                         </div>
+
                     )}
 
                 </form>

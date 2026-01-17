@@ -8,9 +8,15 @@ import {
     Plus, Download, DollarSign
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ThemeToggle from '../components/ThemeToggle';
+import { useSettings } from '../context/SettingsContext';
+
+
 
 const AccountantDashboard = () => {
     const { user, logout } = useAuth();
+    const { settings } = useSettings();
+
     const [activeTab, setActiveTab] = useState('overview');
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,13 +44,24 @@ const AccountantDashboard = () => {
     ];
 
     return (
-        <div className="bg-slate-950 min-h-screen text-slate-50 flex font-sans">
+        <div className="bg-background min-h-screen text-text flex font-sans transition-colors duration-300">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-slate-800 p-6 flex flex-col gap-10 bg-slate-950/50 backdrop-blur-xl sticky top-0 h-screen">
+            <aside className="w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/30 backdrop-blur-xl sticky top-0 h-screen">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-xl">A</div>
-                    <span className="text-2xl font-bold font-heading">GUMS</span>
+                    {settings.schoolLogo ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-white flex items-center justify-center p-1">
+                            <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
+                        </div>
+                    ) : (
+                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-primary/20">
+                            {settings.schoolAbbreviation?.charAt(0) || 'A'}
+                        </div>
+                    )}
+                    <span className="text-2xl font-bold font-heading text-text">
+                        {settings.schoolAbbreviation || 'GUMS'}
+                    </span>
                 </div>
+
 
                 <nav className="flex flex-col gap-2">
                     {navItems.map((item) => (
@@ -52,8 +69,8 @@ const AccountantDashboard = () => {
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
                             className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeTab === item.id
-                                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                : 'text-text-muted hover:bg-surface hover:text-text'
                                 }`}
                         >
                             {item.icon}
@@ -62,19 +79,22 @@ const AccountantDashboard = () => {
                     ))}
                 </nav>
 
-                <div className="mt-auto pt-6 border-t border-slate-800">
-                    <div className="flex items-center gap-3 mb-6 p-2">
-                        <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center">
-                            <UserIcon size={20} className="text-slate-400" />
+                <div className="mt-auto space-y-4">
+                    <div className="flex items-center gap-3 mb-2 p-2 bg-surface/50 border border-border rounded-xl">
+                        <div className="w-10 h-10 bg-surface-hover rounded-full flex items-center justify-center border border-border text-text-muted">
+                            <UserIcon size={20} />
                         </div>
                         <div className="overflow-hidden">
-                            <p className="text-sm font-bold truncate">{user?.firstName} {user?.lastName}</p>
-                            <p className="text-xs text-slate-500 truncate uppercase">Accountant</p>
+                            <p className="text-sm font-bold truncate text-text">{user?.firstName} {user?.lastName}</p>
+                            <p className="text-[10px] text-text-muted truncate uppercase tracking-widest font-bold">Accountant Portal</p>
                         </div>
                     </div>
+
+                    <ThemeToggle />
+
                     <button
                         onClick={logout}
-                        className="flex items-center gap-3 p-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl transition-colors font-medium"
+                        className="flex items-center gap-3 p-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl transition-colors font-medium border border-transparent hover:border-red-500/20"
                     >
                         <LogOut size={20} />
                         Logout
@@ -86,114 +106,96 @@ const AccountantDashboard = () => {
             <main className="flex-1 p-8 overflow-y-auto">
                 <header className="flex justify-between items-center mb-10">
                     <div>
-                        <h1 className="text-3xl font-bold font-heading capitalize">
+                        <h1 className="text-3xl font-bold font-heading capitalize text-text">
                             Financial Management
                         </h1>
-                        <p className="text-slate-400 mt-1">GUMS Centralized Finance Portal</p>
+                        <p className="text-text-muted mt-1 px-3 py-1 bg-surface border border-border rounded-full inline-block text-[10px] font-bold uppercase tracking-widest">GUMS Centralized Finance Portal</p>
                     </div>
                     <div className="flex gap-4">
-                        <div className="glass-card flex items-center gap-3 px-4 py-2 border-slate-800">
-                            <Search size={18} className="text-slate-500" />
-                            <input className="bg-transparent outline-none text-sm w-48" placeholder="Search records..." />
+                        <div className="glass-card flex items-center gap-3 px-4 py-2 border-border bg-surface/50 shadow-none">
+                            <Search size={18} className="text-text-muted" />
+                            <input className="bg-transparent outline-none text-sm w-48 text-text" placeholder="Search records..." />
                         </div>
-                        <button className="w-12 h-12 glass-card flex items-center justify-center text-slate-400 hover:text-white transition-colors relative">
+                        <button className="w-12 h-12 glass-card flex items-center justify-center text-text-muted hover:text-text transition-colors relative border-border hover:border-primary/50 shadow-none">
                             <Bell size={20} />
-                            <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full"></span>
+                            <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full ring-2 ring-background"></span>
                         </button>
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                    <div className="glass-card p-6 border-l-4 border-emerald-500">
-                        <p className="text-slate-500 text-xs font-bold uppercase mb-2">Total Revenue</p>
-                        <div className="flex items-end gap-2">
-                            <h2 className="text-2xl font-bold">GHS 1.2M</h2>
-                            <span className="text-emerald-500 text-xs flex items-center font-bold mb-1"><TrendingUp size={12} /> +12%</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    {[
+                        { label: 'Total Revenue', value: 'GH¢ 1.2M', icon: <TrendingUp size={24} />, trend: '+12%', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                        { label: 'Pending Fees', value: 'GH¢ 450K', icon: <ArrowUpRight size={24} />, trend: 'Active Term', color: 'text-primary', bg: 'bg-primary/10' },
+                        { label: 'Voucher Sales', value: 'GH¢ 85K', icon: <Plus size={24} />, trend: '120 Units', color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+                        { label: 'Payroll Due', value: 'GH¢ 320K', icon: <DollarSign size={24} />, trend: '25th Jan', color: 'text-purple-500', bg: 'bg-purple-500/10' },
+                    ].map((stat, i) => (
+                        <div key={i} className="glass-card p-6 border-border bg-surface/50 group hover:border-primary/30 transition-all">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className={`w-12 h-12 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110`}>
+                                    {stat.icon}
+                                </div>
+                                <span className={`text-[10px] font-black uppercase tracking-wider ${stat.color}`}>
+                                    {stat.trend}
+                                </span>
+                            </div>
+                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{stat.label}</p>
+                            <h3 className="text-2xl font-black text-text mt-1">{stat.value}</h3>
                         </div>
-                    </div>
-                    <div className="glass-card p-6 border-l-4 border-blue-500">
-                        <p className="text-slate-500 text-xs font-bold uppercase mb-2">Pending Fees</p>
-                        <div className="flex items-end gap-2">
-                            <h2 className="text-2xl font-bold">GHS 450K</h2>
-                            <span className="text-blue-500 text-xs flex items-center font-bold mb-1">Active Term</span>
-                        </div>
-                    </div>
-                    <div className="glass-card p-6 border-l-4 border-amber-500">
-                        <p className="text-slate-500 text-xs font-bold uppercase mb-2">Voucher Sales</p>
-                        <div className="flex items-end gap-2">
-                            <h2 className="text-2xl font-bold">GHS 85K</h2>
-                            <span className="text-amber-500 text-xs flex items-center font-bold mb-1"><Plus size={12} /> 120 Units</span>
-                        </div>
-                    </div>
-                    <div className="glass-card p-6 border-l-4 border-purple-500">
-                        <p className="text-slate-500 text-xs font-bold uppercase mb-2">Payroll Due</p>
-                        <div className="flex items-end gap-2">
-                            <h2 className="text-2xl font-bold">GHS 320K</h2>
-                            <span className="text-slate-500 text-xs flex items-center font-bold mb-1">25th Jan</span>
-                        </div>
-                    </div>
+                    ))}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="glass-card p-8">
+                    <div className="glass-card p-8 border-border bg-surface/50">
                         <div className="flex justify-between items-center mb-8">
-                            <h3 className="font-bold text-lg uppercase tracking-wider font-heading">Recent Payments</h3>
-                            <button className="text-xs text-emerald-500 font-bold hover:underline">View All</button>
+                            <h3 className="font-bold text-lg uppercase tracking-wider font-heading text-text">Recent Payments</h3>
+                            <button className="text-xs text-primary font-bold hover:underline">View All</button>
                         </div>
                         <div className="space-y-6">
                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="flex justify-between items-center">
+                                <div key={i} className="flex justify-between items-center p-3 hover:bg-surface rounded-xl transition-colors border border-transparent hover:border-border">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-emerald-500">
+                                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                                             <ArrowUpRight size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold">Kwame Mensah - Tuition Fee</p>
-                                            <p className="text-[10px] text-slate-500 font-medium">PAY-REF-00X{i} | MoMo Payment</p>
+                                            <p className="text-sm font-bold text-text">Kwame Mensah - Tuition Fee</p>
+                                            <p className="text-[10px] text-text-muted font-medium uppercase tracking-widest">PAY-REF-00X{i} | MoMo Payment</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-bold text-emerald-400">+ GHS 2,500.00</p>
-                                        <p className="text-[10px] text-slate-500 font-medium">10 Min ago</p>
+                                        <p className="text-sm font-bold text-emerald-500">+ GHS 2,500.00</p>
+                                        <p className="text-[10px] text-text-muted font-medium">10 Min ago</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="glass-card p-8">
+                    <div className="glass-card p-8 border-border bg-surface/50">
                         <div className="flex justify-between items-center mb-8">
-                            <h3 className="font-bold text-lg uppercase tracking-wider font-heading">Expense Overview</h3>
-                            <Download size={18} className="text-slate-500 cursor-pointer hover:text-white" />
+                            <h3 className="font-bold text-lg uppercase tracking-wider font-heading text-text">Expense Overview</h3>
+                            <Download size={18} className="text-text-muted cursor-pointer hover:text-primary transition-colors" />
                         </div>
                         <div className="space-y-6">
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-xs font-bold text-slate-400">
-                                    <span>Campus Utilities</span>
-                                    <span>GHS 45,000 / 60,000</span>
+                            {[
+                                { label: 'Campus Utilities', spent: '45,000', total: '60,000', color: 'bg-primary' },
+                                { label: 'Staff Salaries', spent: '280,000', total: '300,000', color: 'bg-emerald-500' },
+                                { label: 'Lab Equipment', spent: '12,000', total: '50,000', color: 'bg-yellow-500' }
+                            ].map((expense, i) => (
+                                <div key={i} className="space-y-2">
+                                    <div className="flex justify-between text-xs font-bold text-text-muted uppercase tracking-widest">
+                                        <span>{expense.label}</span>
+                                        <span className="text-text">GHS {expense.spent} / {expense.total}</span>
+                                    </div>
+                                    <div className="h-2 bg-surface rounded-full overflow-hidden border border-border">
+                                        <div
+                                            className={`h-full ${expense.color} transition-all duration-1000`}
+                                            style={{ width: `${(parseInt(expense.spent.replace(',', '')) / parseInt(expense.total.replace(',', ''))) * 100}%` }}
+                                        ></div>
+                                    </div>
                                 </div>
-                                <div className="h-2 bg-slate-900 rounded-full overflow-hidden">
-                                    <div className="h-full bg-blue-500 w-[75%]"></div>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-xs font-bold text-slate-400">
-                                    <span>Staff Salaries</span>
-                                    <span>GHS 280,000 / 300,000</span>
-                                </div>
-                                <div className="h-2 bg-slate-900 rounded-full overflow-hidden">
-                                    <div className="h-full bg-emerald-500 w-[93%]"></div>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-xs font-bold text-slate-400">
-                                    <span>Lab Equipment</span>
-                                    <span>GHS 12,000 / 50,000</span>
-                                </div>
-                                <div className="h-2 bg-slate-900 rounded-full overflow-hidden">
-                                    <div className="h-full bg-amber-500 w-[24%]"></div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>

@@ -7,20 +7,40 @@
 
 
 :root {
-  --primary: #0066ff;
-  --primary-hover: #0052cc;
-  --secondary: #6366f1;
+  /* Light Theme (Default) - Sea Blue & White */
+  --primary: #0077be;
+  --primary-hover: #00609a;
+  --secondary: #0099cc;
   --accent: #f43f5e;
-  --background: #0f172a;
-  --surface: #1e293b;
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --glass: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.05);
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
+  --border: #e2e8f0;
 }
+
+[data-theme='dark'] {
+  /* Dark Theme - Ocean Navy */
+  --primary: #0099cc;
+  --primary-hover: #00bbff;
+  --secondary: #0ea5e9;
+  --accent: #fb7185;
+  --background: #020617;
+  --surface: #0f172a;
+  --surface-hover: #1e293b;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --glass: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --border: #1e293b;
+}
+
 
 * {
   margin: 0;
@@ -90,18 +110,19 @@ h4,
 .input-field {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid var(--glass-border);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
-  color: white;
+  color: var(--text);
   transition: all 0.2s ease;
 }
 
 .input-field:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb, 0, 119, 190), 0.2);
 }
+
 
 /* Animations */
 @keyframes fadeIn {

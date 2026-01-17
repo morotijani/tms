@@ -4,6 +4,8 @@ import { GraduationCap, Mail, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
+import ThemeToggle from '../components/ThemeToggle';
+
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -22,12 +24,10 @@ const LoginPage = () => {
             if (user.role === 'applicant') navigate('/applicant');
             else if (user.role === 'registrar') navigate('/registrar');
             else if (user.role === 'admin') navigate('/admin');
-
             else if (user.role === 'student') navigate('/student');
             else if (user.role === 'staff') navigate('/staff');
             else if (user.role === 'accountant') navigate('/accountant');
             else navigate('/');
-
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
         } finally {
@@ -36,18 +36,22 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="bg-slate-950 min-h-screen flex items-center justify-center p-6">
+        <div className="bg-background min-h-screen flex items-center justify-center p-6 transition-colors duration-300">
+            <div className="absolute top-6 right-6">
+                <ThemeToggle />
+            </div>
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="glass-card w-full max-w-md p-8"
+                className="glass-card w-full max-w-md p-8 border border-border"
             >
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
-                        <GraduationCap size={48} className="text-blue-500" />
+                        <GraduationCap size={48} className="text-primary" />
                     </div>
                     <h1 className="text-3xl font-bold font-heading mb-2">Welcome Back</h1>
-                    <p className="text-slate-400">Login to your GUMS account</p>
+                    <p className="text-text-muted">Login to your GUMS account</p>
                 </div>
 
                 {error && (
@@ -60,7 +64,7 @@ const LoginPage = () => {
                     <div>
                         <label className="block text-sm font-medium mb-2">Email Address</label>
                         <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
                             <input
                                 type="email"
                                 required
@@ -73,9 +77,9 @@ const LoginPage = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-2">Password</label>
+                        <label className="block text-sm font-medium mb-2 text-text">Password</label>
                         <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
                             <input
                                 type="password"
                                 required
@@ -96,12 +100,13 @@ const LoginPage = () => {
                     </button>
                 </form>
 
-                <p className="text-center mt-8 text-slate-400 text-sm">
-                    Don't have an account? <Link to="/register" className="text-blue-500 hover:underline">Apply Today</Link>
+                <p className="text-center mt-8 text-text-muted text-sm">
+                    Don't have an account? <Link to="/purchase-voucher" className="text-primary hover:underline font-bold">Apply Today</Link>
                 </p>
             </motion.div>
         </div>
     );
 };
+
 
 export default LoginPage;

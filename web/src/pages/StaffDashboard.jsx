@@ -7,10 +7,16 @@ import {
     PlusCircle, FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ThemeToggle from '../components/ThemeToggle';
 import GradeEntry from '../components/GradeEntry';
+import { useSettings } from '../context/SettingsContext';
+
+
 
 const StaffDashboard = () => {
     const { user, logout } = useAuth();
+    const { settings } = useSettings();
+
     const [activeTab, setActiveTab] = useState('courses');
     const [courses, setCourses] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
@@ -44,13 +50,26 @@ const StaffDashboard = () => {
     ];
 
     return (
-        <div className="bg-slate-950 min-h-screen text-slate-50 flex font-sans">
+        <div className="bg-background min-h-screen text-text flex font-sans transition-colors duration-300">
+
             {/* Sidebar */}
-            <aside className="w-64 border-r border-slate-800 p-6 flex flex-col gap-10 bg-slate-950/50 backdrop-blur-xl sticky top-0 h-screen">
+            <aside className="w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/30 backdrop-blur-xl sticky top-0 h-screen">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl uppercase italic">S</div>
-                    <span className="text-2xl font-bold font-heading">GUMS</span>
+                    {settings.schoolLogo ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-white flex items-center justify-center p-1">
+                            <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
+                        </div>
+                    ) : (
+                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-primary/20">
+                            {settings.schoolAbbreviation?.charAt(0) || 'S'}
+                        </div>
+                    )}
+                    <span className="text-2xl font-bold font-heading text-text">
+                        {settings.schoolAbbreviation || 'GUMS'}
+                    </span>
                 </div>
+
+
 
                 <nav className="flex flex-col gap-2">
                     {navItems.map((item) => (
@@ -58,49 +77,57 @@ const StaffDashboard = () => {
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
                             className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeTab === item.id
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                : 'text-text-muted hover:bg-surface hover:text-text'
                                 }`}
                         >
+
                             {item.icon}
                             <span className="font-medium">{item.label}</span>
                         </button>
                     ))}
                 </nav>
 
-                <div className="mt-auto pt-6 border-t border-slate-800">
-                    <div className="flex items-center gap-3 mb-6 p-2">
-                        <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center">
-                            <UserIcon size={20} className="text-slate-400" />
+                <div className="mt-auto space-y-4">
+                    <div className="flex items-center gap-3 mb-2 p-2 bg-surface/50 border border-border rounded-xl">
+                        <div className="w-10 h-10 bg-surface-hover rounded-full flex items-center justify-center border border-border text-text-muted">
+                            <UserIcon size={20} />
                         </div>
                         <div className="overflow-hidden">
-                            <p className="text-sm font-bold truncate">{user?.firstName} {user?.lastName}</p>
-                            <p className="text-xs text-slate-500 truncate">Staff ID: 00{user?.id}</p>
+                            <p className="text-sm font-bold truncate text-text">{user?.firstName} {user?.lastName}</p>
+                            <p className="text-[10px] text-text-muted truncate uppercase tracking-widest font-bold">Staff Member</p>
                         </div>
                     </div>
+
+                    <ThemeToggle />
+
                     <button
                         onClick={logout}
-                        className="flex items-center gap-3 p-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl transition-colors font-medium"
+                        className="flex items-center gap-3 p-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl transition-colors font-medium border border-transparent hover:border-red-500/20"
                     >
                         <LogOut size={20} />
                         Logout
                     </button>
                 </div>
+
             </aside>
 
             {/* Main Content */}
             <main className="flex-1 p-8 overflow-y-auto">
                 <header className="flex justify-between items-center mb-10">
                     <div>
-                        <h1 className="text-3xl font-bold font-heading capitalize">
-                            {activeTab.replace('-', ' ')}
+                        <h1 className="text-3xl font-bold font-heading text-text">
+                            {activeTab === 'overview' && 'Staff Overview'}
+                            {activeTab === 'grades' && 'Grade Entry Portal'}
+                            {activeTab === 'courses' && 'My Courses'}
+                            {activeTab === 'attendance' && 'Attendance Registry'}
                         </h1>
-                        <p className="text-slate-400 mt-1">Lecurer Dashboard | {new Date().toDateString()}</p>
+                        <p className="text-text-muted mt-1 px-3 py-1 bg-surface border border-border rounded-full inline-block text-[10px] font-bold uppercase tracking-widest">Faculty of Computing & Info Systems</p>
                     </div>
                     <div className="flex gap-4">
-                        <button className="w-12 h-12 glass-card flex items-center justify-center text-slate-400 hover:text-white transition-colors relative">
+                        <button className="w-12 h-12 glass-card flex items-center justify-center text-text-muted hover:text-text transition-colors relative">
                             <Bell size={20} />
-                            <span className="absolute top-3 right-3 w-2 h-2 bg-indigo-500 rounded-full"></span>
+                            <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full"></span>
                         </button>
                     </div>
                 </header>

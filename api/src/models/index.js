@@ -11,6 +11,8 @@ const Payment = require('./Payment');
 const Resource = require('./Resource');
 const Attendance = require('./Attendance');
 const GradingScheme = require('./GradingScheme');
+const Setting = require('./Setting');
+
 
 // Associations
 
@@ -82,7 +84,9 @@ module.exports = {
     Payment,
     Resource,
     Attendance,
-    GradingScheme
+    GradingScheme,
+    Setting
+
 };
 
 

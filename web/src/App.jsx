@@ -1,5 +1,7 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import { SettingsProvider } from './context/SettingsContext';
+
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterApplicant from './pages/RegisterApplicant';
@@ -15,34 +17,39 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterApplicant />} />
-          <Route path="/purchase-voucher" element={<PurchaseVoucher />} />
-          <Route path="/verify-payment" element={<VerifyPayment />} />
+    <ThemeProvider>
+      <SettingsProvider>
+        <Router>
+          <div className="min-h-screen bg-background text-text transition-colors duration-300">
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterApplicant />} />
+              <Route path="/purchase-voucher" element={<PurchaseVoucher />} />
+              <Route path="/verify-payment" element={<VerifyPayment />} />
 
 
-          <Route path="/applicant/*" element={<ProtectedRoute><ApplicantDashboard /></ProtectedRoute>} />
-          <Route path="/registrar/*" element={<ProtectedRoute><RegistrarDashboard /></ProtectedRoute>} />
-          <Route path="/student/*" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/applicant/*" element={<ProtectedRoute><ApplicantDashboard /></ProtectedRoute>} />
+              <Route path="/registrar/*" element={<ProtectedRoute><RegistrarDashboard /></ProtectedRoute>} />
+              <Route path="/student/*" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
 
-          <Route path="/staff/*" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
-          <Route path="/accountant/*" element={<ProtectedRoute><AccountantDashboard /></ProtectedRoute>} />
-          <Route path="/admin/*" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-
-
+              <Route path="/staff/*" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
+              <Route path="/accountant/*" element={<ProtectedRoute><AccountantDashboard /></ProtectedRoute>} />
+              <Route path="/admin/*" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
 
 
 
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </div>
-    </Router>
+
+
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </div>
+        </Router>
+      </SettingsProvider>
+    </ThemeProvider>
   );
+
 }
 
 export default App;

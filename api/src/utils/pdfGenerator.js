@@ -1,8 +1,11 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const { Setting } = require('../models');
 
-const generateAdmissionLetter = async (user, program, applicationId) => {
+
+const generateAdmissionLetter = async (user, program, applicationId, settings) => {
+
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument({ margin: 50 });
         const filePath = path.join(__dirname, `../../uploads/admission_letters/${applicationId}.pdf`);
@@ -16,11 +19,26 @@ const generateAdmissionLetter = async (user, program, applicationId) => {
         const stream = fs.createWriteStream(filePath);
         doc.pipe(stream);
 
+        // Logo
+        if (settings.schoolLogo) {
+            try {
+                const logoPath = path.join(__dirname, '../../', settings.schoolLogo);
+                if (fs.existsSync(logoPath)) {
+                    doc.image(logoPath, 50, 45, { width: 50 });
+                    doc.moveDown();
+                }
+            } catch (err) {
+                console.error("Error adding logo to PDF:", err);
+            }
+        }
+
         // Header
-        doc.fontSize(20).text('GHANA UNIVERSITY MANAGEMENT SYSTEM', { align: 'center' });
+        doc.fontSize(20).text(settings.schoolName || 'GHANA UNIVERSITY MANAGEMENT SYSTEM', { align: 'center' });
+        doc.fontSize(10).text(settings.schoolAddress || '', { align: 'center' });
         doc.moveDown();
         doc.fontSize(16).text('OFFICIAL ADMISSION LETTER', { align: 'center', underline: true });
         doc.moveDown(2);
+
 
         // Date
         doc.fontSize(12).text(`Date: ${new Date().toLocaleDateString()}`, { align: 'right' });
@@ -45,7 +63,8 @@ const generateAdmissionLetter = async (user, program, applicationId) => {
         doc.text('Yours Faithfully,', { align: 'left' });
         doc.moveDown();
         doc.text('The Registrar', { align: 'left' });
-        doc.text('GUMS', { align: 'left' });
+        doc.text(settings.schoolAbbreviation || 'GUMS', { align: 'left' });
+
 
         doc.end();
 

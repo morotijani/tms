@@ -3,7 +3,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
 const { sequelize, connectDB } = require('./config/database');
-const { seedRoles, seedCourses, seedUsers, seedPrograms } = require('./utils/seed');
+const { seedRoles, seedCourses, seedUsers, seedPrograms, seedSettings } = require('./utils/seed');
+
 
 dotenv.config();
 
@@ -18,7 +19,9 @@ const startDB = async () => {
         await seedCourses();
         await seedUsers();
         await seedPrograms();
+        await seedSettings();
     }
+
 };
 
 
@@ -34,6 +37,8 @@ const staffRoutes = require('./routes/staffRoutes');
 const financeRoutes = require('./routes/financeRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const registrarRoutes = require('./routes/registrarRoutes');
+const settingRoutes = require('./routes/settingRoutes');
+
 
 
 
@@ -61,6 +66,8 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/registrar', registrarRoutes);
+app.use('/api/settings', settingRoutes);
+
 
 
 

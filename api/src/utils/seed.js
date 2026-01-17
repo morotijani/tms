@@ -1,4 +1,5 @@
-const { Role, Course, User, Program } = require('../models');
+const { Role, Course, User, Program, Setting } = require('../models');
+
 
 
 
@@ -133,6 +134,30 @@ const seedPrograms = async () => {
     }
 };
 
-module.exports = { seedRoles, seedCourses, seedUsers, seedPrograms };
+const seedSettings = async () => {
+    try {
+        const settings = [
+            { key: 'schoolName', value: 'Ghana University Management System', type: 'text' },
+            { key: 'schoolAbbreviation', value: 'GUMS', type: 'text' },
+            { key: 'schoolAddress', value: '123 University Avenue, Accra, Ghana', type: 'text' },
+            { key: 'schoolLogo', value: '', type: 'image' },
+            { key: 'schoolEmail', value: 'info@gums.edu.gh', type: 'text' },
+            { key: 'schoolPhone', value: '+233 123 456 789', type: 'text' }
+        ];
+
+        for (const setting of settings) {
+            await Setting.findOrCreate({
+                where: { key: setting.key },
+                defaults: setting
+            });
+        }
+        console.log('Settings seeded successfully.');
+    } catch (error) {
+        console.error('Error seeding settings:', error);
+    }
+};
+
+module.exports = { seedRoles, seedCourses, seedUsers, seedPrograms, seedSettings };
+
 
 

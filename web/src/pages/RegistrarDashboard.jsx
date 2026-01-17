@@ -9,9 +9,15 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdmissionForm from '../components/AdmissionForm';
+import ThemeToggle from '../components/ThemeToggle';
+import { useSettings } from '../context/SettingsContext';
+
+
 
 const RegistrarDashboard = () => {
     const { user, logout } = useAuth();
+    const { settings } = useSettings();
+
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedApp, setSelectedApp] = useState(null);
@@ -97,54 +103,67 @@ const RegistrarDashboard = () => {
     };
 
     return (
-        <div className="bg-slate-950 min-h-screen text-slate-50 flex font-sans">
+        <div className="bg-background min-h-screen text-text flex font-sans transition-colors duration-300">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-slate-800 p-6 flex flex-col gap-8 hidden lg:flex">
-                <div className="text-2xl font-bold font-heading flex items-center gap-2">
-                    <span className="text-blue-500">GUMS</span> Registrar
+            <aside className="w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/30 backdrop-blur-xl sticky top-0 h-screen">
+                <div className="flex items-center gap-3 text-text">
+                    {settings.schoolLogo ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-white flex items-center justify-center p-1">
+                            <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
+                        </div>
+                    ) : (
+                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-primary/20">
+                            {settings.schoolAbbreviation?.charAt(0) || 'R'}
+                        </div>
+                    )}
+                    <span className="text-2xl font-bold font-heading tracking-tighter">
+                        {settings.schoolAbbreviation || 'GUMS'}<span className="text-primary italic">.</span>
+                    </span>
                 </div>
 
+
                 <nav className="flex flex-col gap-2">
-                    <button className="flex items-center gap-3 p-3 rounded-lg bg-blue-600 text-white transition-colors">
-                        <Users size={20} /> Admissions
+                    <button className="flex items-center gap-3 p-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-all">
+                        <Users size={20} /> Applications
                     </button>
-                    <button className="flex items-center gap-3 p-3 rounded-lg text-slate-400 hover:bg-slate-800 transition-colors">
-                        <BookOpen size={20} /> Programs
-                    </button>
-                    <button className="flex items-center gap-3 p-3 rounded-lg text-slate-400 hover:bg-slate-800 transition-colors">
+                    <button className="flex items-center gap-3 p-3 rounded-xl text-text-muted hover:bg-surface transition-colors">
                         <GraduationCap size={20} /> Students
+                    </button>
+                    <button className="flex items-center gap-3 p-3 rounded-xl text-text-muted hover:bg-surface transition-colors">
+                        <BookOpen size={20} /> Programs
                     </button>
                 </nav>
 
-                <button onClick={logout} className="mt-auto flex items-center gap-3 p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors font-bold uppercase text-xs tracking-widest">
-                    <LogOut size={20} /> Logout
-                </button>
+                <div className="mt-auto space-y-4">
+                    <ThemeToggle />
+                    <button onClick={logout} className="flex items-center gap-3 p-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl transition-colors font-medium">
+                        <LogOut size={20} /> Logout
+                    </button>
+                </div>
             </aside>
 
             {/* Main Area */}
             <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-                <header className="mb-10 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <header className="mb-10 flex justify-between items-center">
                     <div>
-                        <h1 className="text-3xl font-black uppercase tracking-tight">Admissions Management</h1>
-                        <p className="text-slate-500 font-medium">Review and process submitted student applications.</p>
+                        <h1 className="text-3xl font-black font-heading">Admissions</h1>
+                        <p className="text-text-muted font-medium">Review and process submitted student applications.</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <div className="glass-card flex items-center gap-3 px-4 py-2 border-border">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+                            <input
+                                className="bg-transparent outline-none text-sm w-64 pl-8"
+                                placeholder="Search by name or email..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <button className="btn bg-surface border-border text-text-muted flex items-center gap-2 h-12 px-6 hover:bg-surface-hover">
+                            <Filter size={18} /> Filter
+                        </button>
                     </div>
                 </header>
-
-                <div className="flex flex-col md:flex-row gap-4 mb-8">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Search by name or email..."
-                            className="input-field pl-10 h-12 py-0 border-slate-800 focus:border-blue-500 transition-all"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <button className="btn bg-slate-900 border-slate-800 text-slate-400 flex items-center gap-2 h-12 px-6">
-                        <Filter size={18} /> Filter List
-                    </button>
-                </div>
 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-xl mb-8 flex items-center gap-2">
@@ -153,51 +172,53 @@ const RegistrarDashboard = () => {
                 )}
 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <Loader2 className="animate-spin text-blue-500" size={48} />
-                        <p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Loading Applications...</p>
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <Loader2 className="animate-spin text-primary" size={48} />
+                        <p className="text-text-muted font-bold uppercase text-xs tracking-widest mt-4">Loading Applications...</p>
                     </div>
                 ) : (
-                    <div className="grid gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         {filteredApps.length > 0 ? filteredApps.map(app => (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 key={app.id}
-                                className="glass-card p-6 flex items-center justify-between hover:border-blue-500/30 transition-all cursor-pointer group border-slate-800 shadow-xl"
+                                layoutId={app.id}
                                 onClick={() => { setSelectedApp(app); setShowDetail(true); }}
+                                className="glass-card p-4 flex items-center justify-between group cursor-pointer hover:border-primary/50 transition-all border-border bg-surface/50"
                             >
                                 <div className="flex items-center gap-6">
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-blue-500/20 text-blue-500 font-black text-xl shadow-inner">
+                                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-black text-xl shadow-inner">
                                         {app.User?.firstName?.[0]}{app.User?.lastName?.[0]}
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-lg uppercase tracking-tight group-hover:text-blue-500 transition-colors">
+                                        <h3 className="font-black text-lg uppercase tracking-tight group-hover:text-primary transition-colors text-text">
                                             {app.User?.firstName} {app.User?.lastName}
                                         </h3>
-                                        <div className="flex flex-wrap gap-4 text-[10px] mt-1">
-                                            <span className="flex items-center gap-1 text-slate-400 font-bold uppercase tracking-widest">
-                                                <FileText size={12} />
-                                                {app.firstChoice?.name || 'No Preference'}
+                                        <div className="flex flex-wrap gap-4 mt-1">
+                                            <span className="flex items-center gap-1 text-text-muted font-bold uppercase tracking-widest text-[10px]">
+                                                <Users size={12} /> STU-00{app.User?.id}
                                             </span>
-                                            <span className="flex items-center gap-1 font-mono uppercase text-slate-500">
-                                                {app.User?.email}
+                                            <span className="flex items-center gap-1 font-mono uppercase text-text-muted/70 text-[10px]">
+                                                Ref: {app.voucherId || 'N/A'}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-6">
-                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${app.status === 'Submitted' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                            'bg-green-500/10 text-green-500 border-green-500/20'
+
+                                <div className="flex items-center gap-8">
+                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${app.status === 'Submitted' ? 'bg-primary/10 text-primary border-primary/20' :
+                                        app.status === 'Admitted' ? 'bg-success/10 text-success border-success/20' :
+                                            'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
                                         }`}>
                                         {app.status}
                                     </span>
-                                    <ChevronRight className="text-slate-700 group-hover:text-blue-500 transition-transform group-hover:translate-x-1" />
+                                    <ChevronRight className="text-text-muted/30 group-hover:text-primary transition-transform group-hover:translate-x-1" />
                                 </div>
                             </motion.div>
                         )) : (
-                            <div className="text-center py-20 bg-slate-900/20 rounded-2xl border border-dashed border-slate-800">
-                                <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">No applications found</p>
+                            <div className="text-center py-20 bg-surface/20 rounded-2xl border border-dashed border-border">
+                                <p className="text-text-muted font-bold uppercase tracking-widest text-sm">No applications found</p>
                             </div>
                         )}
                     </div>
@@ -219,40 +240,44 @@ const RegistrarDashboard = () => {
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                            className="w-full max-w-5xl h-full bg-slate-950 border-l border-slate-800 z-10 flex flex-col shadow-2xl"
+                            className="w-full max-w-5xl h-full bg-background border-l border-border z-10 flex flex-col shadow-2xl"
                         >
-                            <header className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-                                <button onClick={() => setShowDetail(false)} className="text-slate-500 hover:text-white flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-colors">
+                            <header className="p-6 border-b border-border flex justify-between items-center bg-surface/50 backdrop-blur-md">
+                                <button onClick={() => setShowDetail(false)} className="text-text-muted hover:text-text flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-colors">
                                     <X size={20} /> Close Profile
                                 </button>
+
 
                                 {selectedApp.status === 'Submitted' && (
                                     <div className="flex gap-3">
                                         <button
                                             disabled={actionLoading}
                                             onClick={() => setShowAdmitModal(true)}
-                                            className="btn bg-green-600 hover:bg-green-500 text-white py-2 px-8 flex items-center gap-2 font-black uppercase text-xs tracking-widest transition-all hover:scale-105"
+                                            className="btn bg-success hover:bg-success/90 text-white py-2 px-8 flex items-center gap-2 font-black uppercase text-xs tracking-widest transition-all hover:scale-105 shadow-lg shadow-success/20"
                                         >
                                             <CheckCircle size={18} /> Approve & Admit
                                         </button>
                                         <button
                                             disabled={actionLoading}
                                             onClick={handleReject}
-                                            className="btn bg-red-600/10 text-red-500 border border-red-500/20 hover:bg-red-600 hover:text-white py-2 px-8 flex items-center gap-2 font-black uppercase text-xs tracking-widest transition-all"
+                                            className="btn bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white py-2 px-8 flex items-center gap-2 font-black uppercase text-xs tracking-widest transition-all"
                                         >
                                             <XCircle size={18} /> Reject
                                         </button>
                                     </div>
+
                                 )}
 
                                 {selectedApp.status === 'Admitted' && (
-                                    <div className="flex items-center gap-2 text-green-500 font-black uppercase text-xs tracking-widest">
+                                    <div className="flex items-center gap-2 text-success font-black uppercase text-xs tracking-widest">
                                         <CheckCircle size={20} /> Successfully Admitted
                                     </div>
                                 )}
+
                             </header>
 
-                            <div className="flex-1 overflow-y-auto p-4 md:p-12 relative bg-[#f8fafc]">
+                            <div className="flex-1 overflow-y-auto p-4 md:p-12 relative bg-background">
+
                                 <AdmissionForm
                                     application={selectedApp}
                                     setApplication={() => { }}
@@ -276,10 +301,11 @@ const RegistrarDashboard = () => {
                         />
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-8 z-10 shadow-2xl"
+                            className="bg-surface border border-border w-full max-w-md rounded-2xl p-8 z-10 shadow-2xl"
                         >
-                            <h2 className="text-2xl font-black uppercase tracking-tight mb-2">Finalize Admission</h2>
-                            <p className="text-slate-400 text-sm mb-6 font-medium">Please select the program this applicant is being officially admitted into:</p>
+                            <h2 className="text-2xl font-black uppercase tracking-tight mb-2 text-text">Finalize Admission</h2>
+                            <p className="text-text-muted text-sm mb-6 font-medium">Please select the program this applicant is being officially admitted into:</p>
+
 
                             <div className="space-y-3 mb-8">
                                 {[
@@ -291,33 +317,35 @@ const RegistrarDashboard = () => {
                                         key={i}
                                         onClick={() => setSelectedAdmittedProgramId(choice.id)}
                                         className={`w-full p-4 rounded-xl border flex flex-col items-start gap-1 transition-all ${selectedAdmittedProgramId === choice.id
-                                                ? 'border-blue-500 bg-blue-500/10'
-                                                : 'border-slate-800 bg-slate-950/50 hover:border-slate-700'
+                                            ? 'border-primary bg-primary/10'
+                                            : 'border-border bg-background/50 hover:border-text-muted/50'
                                             }`}
                                     >
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{choice.label}</span>
-                                        <span className={`text-sm font-bold text-left ${selectedAdmittedProgramId === choice.id ? 'text-blue-400' : 'text-slate-300'}`}>
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">{choice.label}</span>
+                                        <span className={`text-sm font-bold text-left ${selectedAdmittedProgramId === choice.id ? 'text-primary' : 'text-text'}`}>
                                             {choice.name}
                                         </span>
                                     </button>
+
                                 ))}
                             </div>
 
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowAdmitModal(false)}
-                                    className="flex-1 py-3 px-6 rounded-xl bg-slate-800 text-white font-black uppercase text-xs tracking-widest hover:bg-slate-700 transition-colors"
+                                    className="flex-1 py-3 px-6 rounded-xl bg-surface-hover text-text font-black uppercase text-xs tracking-widest hover:bg-border transition-colors border border-border"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     disabled={actionLoading}
                                     onClick={handleAdmit}
-                                    className="flex-1 py-3 px-6 rounded-xl bg-blue-600 text-white font-black uppercase text-xs tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 px-6 rounded-xl bg-primary text-white font-black uppercase text-xs tracking-widest hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                                 >
                                     {actionLoading ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle size={16} />}
                                     Confirm Admission
                                 </button>
+
                             </div>
                         </motion.div>
                     </div>
@@ -335,22 +363,24 @@ const RegistrarDashboard = () => {
                         />
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-slate-900 border border-slate-800 w-full max-w-6xl h-full max-h-[90vh] rounded-3xl overflow-hidden z-10 flex flex-col shadow-2xl"
+                            className="bg-surface border border-border w-full max-w-6xl h-full max-h-[90vh] rounded-3xl overflow-hidden z-10 flex flex-col shadow-2xl"
                         >
-                            <header className="p-4 md:p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900">
+                            <header className="p-4 md:p-6 border-b border-border flex justify-between items-center bg-background/50 backdrop-blur-md">
                                 <div>
-                                    <h3 className="font-black uppercase tracking-tighter text-xl">{docViewer.label}</h3>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Applicant Credential Verification</p>
+                                    <h3 className="font-black uppercase tracking-tighter text-xl text-text">{docViewer.label}</h3>
+                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Applicant Credential Verification</p>
                                 </div>
+
                                 <div className="flex gap-4">
                                     <a
                                         href={getDocUrl(docViewer.path)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="btn bg-slate-800 hover:bg-slate-700 text-white p-2 md:px-4 flex items-center gap-2"
+                                        className="btn bg-surface border border-border hover:bg-surface-hover text-text p-2 md:px-4 flex items-center gap-2"
                                     >
                                         <Maximize2 size={18} /> <span className="hidden md:inline text-[10px] font-black uppercase">Open Original</span>
                                     </a>
+
                                     <button
                                         onClick={() => setDocViewer({ ...docViewer, show: false })}
                                         className="w-10 h-10 rounded-full bg-red-600/10 text-red-500 flex items-center justify-center hover:bg-red-600 hover:text-white transition-colors"
@@ -359,11 +389,11 @@ const RegistrarDashboard = () => {
                                     </button>
                                 </div>
                             </header>
-                            <div className="flex-1 bg-slate-950 flex items-center justify-center p-4 relative overflow-auto">
+                            <div className="flex-1 bg-background flex items-center justify-center p-4 relative overflow-auto">
                                 {docViewer.path.toLowerCase().endsWith('.pdf') ? (
                                     <iframe
                                         src={`${getDocUrl(docViewer.path)}#toolbar=0`}
-                                        className="w-full h-full rounded-xl border border-slate-800"
+                                        className="w-full h-full rounded-xl border border-border"
                                         title="PDF Viewer"
                                     />
                                 ) : (
@@ -374,6 +404,7 @@ const RegistrarDashboard = () => {
                                     />
                                 )}
                             </div>
+
                         </motion.div>
                     </div>
                 )}

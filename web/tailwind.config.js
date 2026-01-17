@@ -7,9 +7,14 @@ export default {
     theme: {
         extend: {
             colors: {
-                primary: "#0066ff",
-                background: "#0f172a",
+                primary: "var(--primary)",
+                background: "var(--background)",
+                surface: "var(--surface)",
+                text: "var(--text)",
+                "text-muted": "var(--text-muted)",
+                border: "var(--border)",
             },
+
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
                 heading: ['Outfit', 'sans-serif'],

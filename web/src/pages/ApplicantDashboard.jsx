@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
-import { Layout, FileText, Upload, CheckCircle, Clock, AlertCircle, LogOut } from 'lucide-react';
+import { Layout, FileText, Upload, CheckCircle, Clock, AlertCircle, LogOut, Bell } from 'lucide-react';
 
 import AdmissionForm from '../components/AdmissionForm';
 import DocumentUpload from '../components/DocumentUpload';
+import ThemeToggle from '../components/ThemeToggle';
+import { useSettings } from '../context/SettingsContext';
+
 
 const ApplicantDashboard = () => {
     const { user, logout } = useAuth();
+    const { settings } = useSettings();
+
     const [application, setApplication] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('status');
@@ -18,7 +24,6 @@ const ApplicantDashboard = () => {
                 const { data } = await api.get('/admission/my-application');
                 setApplication(data);
             } catch (err) {
-
                 console.error("No application found yet");
             } finally {
                 setLoading(false);
@@ -29,124 +34,195 @@ const ApplicantDashboard = () => {
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'Admitted': return <CheckCircle className="text-green-500" />;
-            case 'Submitted': return <Clock className="text-blue-500" />;
+            case 'Admitted': return <CheckCircle className="text-success" />;
+            case 'Submitted': return <Clock className="text-primary" />;
             default: return <AlertCircle className="text-yellow-500" />;
         }
     };
 
+    const navItems = [
+        { id: 'status', icon: Layout, label: 'Application Status' },
+        { id: 'form', icon: FileText, label: 'Admission Form' },
+        { id: 'upload', icon: Upload, label: 'Document Upload' },
+    ];
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
     return (
-        <div className="bg-slate-950 min-h-screen text-slate-50 flex">
+        <div className="bg-background min-h-screen text-text flex font-sans transition-colors duration-300">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-slate-800 p-6 flex flex-col gap-8">
-                <div className="text-2xl font-bold font-heading flex items-center gap-2">
-                    <span className="text-blue-500">GUMS</span> Portal
+            <aside className="w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/30 backdrop-blur-xl sticky top-0 h-screen">
+                <div className="flex items-center gap-3">
+                    {settings.schoolLogo ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-white flex items-center justify-center p-1">
+                            <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
+                        </div>
+                    ) : (
+                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-primary/20">
+                            {settings.schoolAbbreviation?.charAt(0) || 'A'}
+                        </div>
+                    )}
+                    <span className="text-2xl font-bold font-heading text-text tracking-tighter">
+                        {settings.schoolAbbreviation || 'GUMS'}<span className="text-primary">.</span>
+                    </span>
                 </div>
 
+
                 <nav className="flex flex-col gap-2">
-                    <button
-                        onClick={() => setActiveTab('status')}
-                        className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${activeTab === 'status' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 text-slate-400'}`}
-                    >
-                        <Layout size={20} /> Application Status
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('form')}
-                        className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${activeTab === 'form' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 text-slate-400'}`}
-                    >
-                        <FileText size={20} /> Admission Form
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('upload')}
-                        className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${activeTab === 'upload' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 text-slate-400'}`}
-                    >
-                        <Upload size={20} /> Document Upload
-                    </button>
+                    {navItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeTab === item.id
+                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                : 'text-text-muted hover:bg-surface hover:text-text'
+                                }`}
+                        >
+                            <item.icon size={20} />
+                            <span className="font-medium">{item.label}</span>
+                        </button>
+                    ))}
                 </nav>
 
-                <button onClick={logout} className="mt-auto flex items-center gap-3 p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
-                    <LogOut size={20} /> Logout
-                </button>
+                <div className="mt-auto space-y-4">
+                    <ThemeToggle />
+                    <button
+                        onClick={logout}
+                        className="flex items-center gap-3 p-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl transition-colors font-medium border border-transparent hover:border-red-500/20"
+                    >
+                        <LogOut size={20} />
+                        Logout
+                    </button>
+                </div>
             </aside>
 
             {/* Main Content */}
             <main className="flex-1 p-8 overflow-y-auto">
-                <header className="mb-10 flex justify-between items-center">
+                <header className="flex justify-between items-center mb-10">
                     <div>
-                        <h1 className="text-3xl font-bold">Welcome, {user?.firstName}</h1>
-                        <p className="text-slate-400">Manage your university application here.</p>
+                        <h1 className="text-3xl font-bold font-heading text-text capitalize">
+                            {activeTab} Portal
+                        </h1>
+                        <p className="text-text-muted mt-1 px-3 py-1 bg-surface border border-border rounded-full inline-block text-[10px] font-bold uppercase tracking-widest">Admissions 2024/2025</p>
                     </div>
-                    <div className="glass-card px-4 py-2 flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        <span className="text-sm font-medium">Applicant Role</span>
+                    <div className="flex gap-4">
+                        <button className="w-12 h-12 glass-card flex items-center justify-center text-text-muted hover:text-text transition-colors relative border-border hover:border-primary/50 shadow-none">
+                            <Bell size={20} />
+                            <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full ring-2 ring-background"></span>
+                        </button>
                     </div>
                 </header>
 
-                {activeTab === 'status' && (
-                    <div className="space-y-8 animate-fade-in">
-                        <div className="glass-card p-8 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-xl font-bold mb-2">Application Status</h3>
-                                <p className="text-slate-400">Current state of your application at GUMS.</p>
+                <AnimatePresence mode="wait">
+                    {activeTab === 'status' && (
+                        <motion.div
+                            key="status"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="space-y-8"
+                        >
+                            <div className="glass-card p-8 border-border bg-surface/50 flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div>
+                                    <h3 className="text-xl font-bold mb-2 text-text">Application Status</h3>
+                                    <p className="text-text-muted text-sm">Track the progress of your admission request.</p>
+                                </div>
+                                <div className="flex items-center gap-4 bg-background p-4 rounded-xl border border-border min-w-[200px] justify-center">
+                                    {getStatusIcon(application?.status || 'Draft')}
+                                    <span className="text-lg font-black uppercase tracking-widest text-text">{application?.status || 'Draft'}</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-4 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                                {getStatusIcon(application?.status || 'Draft')}
-                                <span className="text-xl font-bold uppercase tracking-wider">{application?.status || 'Draft'}</span>
-                            </div>
-                        </div>
 
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="glass-card p-6">
-                                <h4 className="font-bold mb-4">Program Choices</h4>
-                                <div className="space-y-4">
-                                    <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                                        <p className="text-xs text-blue-500 font-bold uppercase mb-1">First Choice</p>
-                                        <p className="font-medium">{application?.firstChoice?.name || 'Not Selected'}</p>
-                                    </div>
-                                    <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                                        <p className="text-xs text-slate-500 font-bold uppercase mb-1">Second Choice</p>
-                                        <p className="font-medium">{application?.secondChoice?.name || 'Not Selected'}</p>
-                                    </div>
-                                    <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-                                        <p className="text-xs text-slate-500 font-bold uppercase mb-1">Third Choice</p>
-                                        <p className="font-medium">{application?.thirdChoice?.name || 'Not Selected'}</p>
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="glass-card p-8 border-border bg-surface/50">
+                                    <h4 className="font-bold text-lg mb-6 uppercase tracking-tight text-text">Program Choices</h4>
+                                    <div className="space-y-4">
+                                        {[
+                                            { label: 'First Choice', name: application?.firstChoice?.name, color: 'text-primary' },
+                                            { label: 'Second Choice', name: application?.secondChoice?.name, color: 'text-text-muted' },
+                                            { label: 'Third Choice', name: application?.thirdChoice?.name, color: 'text-text-muted' }
+                                        ].map((choice, i) => (
+                                            <div key={i} className="p-4 bg-background/50 rounded-xl border border-border group hover:border-primary/30 transition-colors">
+                                                <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${choice.color}`}>{choice.label}</p>
+                                                <p className="font-bold text-text">{choice.name || 'Not Selected'}</p>
+                                            </div>
+                                        ))}
                                     </div>
 
+                                    {application?.status === 'Submitted' && (
+                                        <div className="mt-8 pt-8 border-t border-border">
+                                            <button
+                                                onClick={() => setActiveTab('form')}
+                                                className="w-full flex items-center justify-center gap-2 p-4 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all"
+                                            >
+                                                <FileText size={20} /> View Submitted Form
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
-                                {application?.status === 'Submitted' && (
-                                    <div className="mt-8">
+                                {application?.status === 'Admitted' && (
+                                    <div className="glass-card p-8 border-success/30 bg-success/5 overflow-hidden relative">
+                                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                                            <CheckCircle size={120} />
+                                        </div>
+                                        <h4 className="font-black text-2xl mb-4 text-success uppercase tracking-tighter">Congratulations!</h4>
+                                        <p className="text-text-muted mb-8 leading-relaxed">You have been offered admission to GUMS. Your journey towards academic excellence begins now. Download your official admission letter below.</p>
+                                        <a
+                                            href={`http://localhost:5000${application.admissionLetter}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="btn btn-primary w-full py-4 flex items-center justify-center gap-3 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/30"
+                                        >
+                                            <FileText size={20} /> Download Admission Letter
+                                        </a>
+                                    </div>
+                                )}
+
+                                {!application && (
+                                    <div className="glass-card p-8 border-primary/30 bg-primary/5">
+                                        <h4 className="font-bold text-xl mb-4 text-primary">Get Started</h4>
+                                        <p className="text-text-muted mb-6">You haven't started your application yet. Click below to fill out the form.</p>
                                         <button
                                             onClick={() => setActiveTab('form')}
-                                            className="w-full flex items-center justify-center gap-2 p-4 bg-blue-600/10 text-blue-500 border border-blue-500/20 rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-all shadow-lg"
+                                            className="btn btn-primary w-full py-4 font-black uppercase tracking-widest"
                                         >
-                                            <FileText size={20} /> View / Print Submitted Application
+                                            Start Application
                                         </button>
                                     </div>
                                 )}
                             </div>
+                        </motion.div>
+                    )}
 
+                    {activeTab === 'form' && (
+                        <motion.div
+                            key="form"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                        >
+                            <AdmissionForm application={application} setApplication={setApplication} />
+                        </motion.div>
+                    )}
 
-                            {application?.status === 'Admitted' && (
-                                <div className="glass-card p-6 border-green-500/50 bg-green-500/5">
-                                    <h4 className="font-bold mb-4">Congratulations!</h4>
-                                    <p className="text-slate-400 mb-6">You have been offered admission. Please download your admission letter below.</p>
-                                    <a
-                                        href={`http://localhost:5000${application.admissionLetter}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="btn btn-primary w-full"
-                                    >
-                                        Download Admission Letter
-                                    </a>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'form' && <AdmissionForm application={application} setApplication={setApplication} />}
-                {activeTab === 'upload' && <DocumentUpload application={application} setApplication={setApplication} />}
+                    {activeTab === 'upload' && (
+                        <motion.div
+                            key="upload"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                        >
+                            <DocumentUpload application={application} setApplication={setApplication} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </main>
         </div>
     );

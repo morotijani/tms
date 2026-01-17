@@ -1,5 +1,8 @@
 const { Op } = require('sequelize');
-const { Application, User, Program } = require('../models');
+const { Application, User, Program, Setting } = require('../models');
+const { generateAdmissionLetter } = require('../utils/pdfGenerator');
+const path = require('path');
+
 
 // @desc    Get all submitted/processed applications
 // @route   GET /api/registrar/applications
@@ -39,15 +42,26 @@ const updateApplicationStatus = async (req, res) => {
             return res.status(404).json({ message: 'Application not found' });
         }
 
-        application.status = status;
-        if (admissionLetter) {
-            application.admissionLetter = admissionLetter;
-        }
-        if (admittedProgramId) {
+        if (status === 'Admitted' && admittedProgramId) {
+            const program = await Program.findByPk(admittedProgramId);
+            const user = await User.findByPk(application.userId);
+
+            // Get current school settings for the letter
+            const settingsList = await Setting.findAll();
+            const settings = {};
+            settingsList.forEach(s => settings[s.key] = s.value);
+
+            const pdfPath = await generateAdmissionLetter(user, program, application.id, settings);
+
+            // Convert absolute path to relative for public access
+            application.admissionLetter = `/uploads/admission_letters/${application.id}.pdf`;
             application.admittedProgramId = admittedProgramId;
         }
 
+        application.status = status;
+
         await application.save();
+
 
 
         res.json({ message: `Application status updated to ${status}`, application });

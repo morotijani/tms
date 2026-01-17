@@ -32,6 +32,12 @@ const DocumentUpload = ({ application, setApplication }) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Restriction for Passport Photo
+        if (e.target.name === 'passportPhoto' && !file.type.startsWith('image/')) {
+            setErrors(prev => ({ ...prev, passportPhoto: 'Passport photo must be an image (JPG, PNG, etc.)' }));
+            return;
+        }
+
         setFiles(prev => ({ ...prev, [e.target.name]: file }));
 
         if (file.type.startsWith('image/') || file.type === 'application/pdf') {
@@ -40,6 +46,7 @@ const DocumentUpload = ({ application, setApplication }) => {
             setPreviews(prev => ({ ...prev, [e.target.name]: 'file' }));
         }
     };
+
 
 
 
@@ -96,9 +103,10 @@ const DocumentUpload = ({ application, setApplication }) => {
     };
 
     return (
-        <div className="glass-card p-8 animate-fade-in max-w-3xl">
+        <div className="glass-card p-8 animate-fade-in max-w-3xl border-border bg-surface/50">
             <h2 className="text-2xl font-bold mb-6">Document Upload</h2>
-            <p className="text-slate-400 mb-8">Please upload clear scans of your academic and personal documents. Supported formats: PDF, JPG, PNG (Max 5MB each).</p>
+            <p className="text-text-muted mb-8">Please upload clear scans of your academic and personal documents. Supported formats: PDF, JPG, PNG (Max 5MB each).</p>
+
 
             {success && (
                 <div className="bg-green-500/10 border border-green-500 text-green-500 p-4 rounded-lg mb-8 flex items-center gap-2">
@@ -131,12 +139,14 @@ const DocumentUpload = ({ application, setApplication }) => {
                 ].map((field, idx) => (
 
 
-                    <div key={idx} className="p-4 bg-slate-900/50 border border-slate-800 rounded-2xl space-y-4">
+                    <div key={idx} className="p-4 bg-surface/80 border border-border rounded-2xl space-y-4">
+
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 bg-slate-800 flex items-center justify-center rounded-xl">
-                                    {files[field.name]?.type.startsWith('image/') ? <ImageIcon className="text-blue-400" size={18} /> : <File className="text-slate-400" size={18} />}
+                                <div className="w-10 h-10 bg-surface flex items-center justify-center rounded-xl border border-border">
+                                    {files[field.name]?.type.startsWith('image/') ? <ImageIcon className="text-primary" size={18} /> : <File className="text-text-muted" size={18} />}
                                 </div>
+
                                 <div>
                                     <p className="text-sm font-bold">{field.label} {field.required && <span className="text-red-500">*</span>}</p>
                                     {field.current && <p className="text-[10px] text-green-500 font-bold uppercase tracking-tighter">Already Uploaded ✓</p>}
@@ -149,7 +159,8 @@ const DocumentUpload = ({ application, setApplication }) => {
                                     <button
                                         type="button"
                                         onClick={() => setShowPreviewModal(field.name)}
-                                        className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors"
+                                        className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center hover:bg-surface-hover transition-colors"
+
                                     >
                                         <Eye size={16} />
                                     </button>
@@ -160,18 +171,20 @@ const DocumentUpload = ({ application, setApplication }) => {
                                     id={field.name}
                                     className="hidden"
                                     onChange={handleFileChange}
-                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    accept={field.name === 'passportPhoto' ? ".jpg,.jpeg,.png" : ".pdf,.jpg,.jpeg,.png"}
                                     required={field.required && !field.current}
                                 />
-                                <label htmlFor={field.name} className="btn bg-blue-600/10 text-blue-500 hover:bg-blue-600 hover:text-white text-[10px] py-2 px-4 rounded-lg font-bold transition-all cursor-pointer">
+
+                                <label htmlFor={field.name} className="btn bg-primary/10 text-primary hover:bg-primary hover:text-white text-[10px] py-2 px-4 rounded-lg font-bold transition-all cursor-pointer">
                                     {files[field.name] ? 'Change File' : 'Select File'}
                                 </label>
+
                             </div>
                         </div>
 
                         {files[field.name] && (
-                            <div className="flex items-center gap-3 p-2 bg-slate-950 rounded-lg border border-slate-800/50">
-                                <div className="text-[10px] font-mono text-slate-500 truncate flex-1">{files[field.name].name}</div>
+                            <div className="flex items-center gap-3 p-2 bg-background/50 rounded-lg border border-border/50">
+                                <div className="text-[10px] font-mono text-text-muted truncate flex-1">{files[field.name].name}</div>
                                 <button type="button" onClick={() => {
                                     setFiles({ ...files, [field.name]: null });
                                     setPreviews({ ...previews, [field.name]: null });
@@ -180,16 +193,18 @@ const DocumentUpload = ({ application, setApplication }) => {
                                 </button>
                             </div>
                         )}
+
                     </div>
                 ))}
 
                 {showPreviewModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm animate-fade-in">
-                        <div className="relative bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col pt-12">
-                            <button onClick={() => setShowPreviewModal(null)} className="absolute top-4 right-4 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-sm animate-fade-in">
+                        <div className="relative bg-surface border border-border rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col pt-12 shadow-2xl">
+                            <button onClick={() => setShowPreviewModal(null)} className="absolute top-4 right-4 w-10 h-10 bg-background/50 rounded-full flex items-center justify-center hover:bg-background transition-colors">
                                 <X size={20} />
                             </button>
-                            <div className="flex-1 overflow-auto p-8 flex items-center justify-center bg-slate-950">
+                            <div className="flex-1 overflow-auto p-8 flex items-center justify-center bg-background/20">
+
                                 {files[showPreviewModal]?.type.startsWith('image/') ? (
                                     <img src={previews[showPreviewModal]} alt="Preview" className="max-w-full h-auto rounded-lg shadow-2xl" />
                                 ) : (
@@ -207,9 +222,10 @@ const DocumentUpload = ({ application, setApplication }) => {
                                 )}
                             </div>
 
-                            <div className="p-4 bg-slate-900 text-center border-t border-slate-800">
-                                <p className="text-xs font-bold text-slate-400">{files[showPreviewModal]?.name}</p>
+                            <div className="p-4 bg-surface text-center border-t border-border">
+                                <p className="text-xs font-bold text-text-muted">{files[showPreviewModal]?.name}</p>
                             </div>
+
                         </div>
                     </div>
                 )}
