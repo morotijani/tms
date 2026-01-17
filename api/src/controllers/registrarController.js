@@ -45,11 +45,33 @@ const updateApplicationStatus = async (req, res) => {
         if (status === 'Admitted' && admittedProgramId) {
             const program = await Program.findByPk(admittedProgramId);
             const user = await User.findByPk(application.userId);
+            const { Role } = require('../models');
 
-            // Get current school settings for the letter
+            // Get current school settings
             const settingsList = await Setting.findAll();
             const settings = {};
             settingsList.forEach(s => settings[s.key] = s.value);
+
+            // 1. Generate Student ID
+            const currentYear = new Date().getFullYear();
+            const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+            const schoolPrefix = settings.schoolAbbreviation || 'GUMS';
+
+            // Format: PREFIX + Year + Program Code + Random
+            const studentId = `${schoolPrefix}${currentYear}${program.code}${randomSuffix}`.toUpperCase().replace(/\s/g, '');
+
+            // 2. Change Role to Student
+            const studentRole = await Role.findOne({ where: { name: 'student' } });
+            if (!studentRole) {
+                return res.status(500).json({ message: 'Student role not found in system' });
+            }
+
+            // 3. Update User
+            user.roleId = studentRole.id;
+            user.studentId = studentId;
+            user.admittedProgramId = admittedProgramId;
+            await user.save();
+
 
             const pdfPath = await generateAdmissionLetter(user, program, application.id, settings);
 

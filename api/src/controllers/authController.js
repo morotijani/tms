@@ -62,11 +62,18 @@ const registerApplicant = async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 const login = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password } = req.body; // 'email' field in body might contain Student ID
 
     try {
+        const { Op } = require('sequelize');
+
         const user = await User.findOne({
-            where: { email },
+            where: {
+                [Op.or]: [
+                    { email: email },
+                    { studentId: email }
+                ]
+            },
             include: [{ model: Role, attributes: ['name'] }]
         });
 
@@ -76,10 +83,11 @@ const login = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 role: user.Role.name,
+                studentId: user.studentId, // Send back student ID
                 token: generateToken(user.id)
             });
         } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+            res.status(401).json({ message: 'Invalid credentials' });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -1,4 +1,4 @@
-const { Application, User, Program, Voucher } = require('../models');
+const { Application, User, Program, Voucher, Setting } = require('../models');
 const crypto = require('crypto');
 const { generateAdmissionLetter } = require('../utils/pdfGenerator');
 
@@ -49,7 +49,6 @@ const admitApplicant = async (req, res) => {
                 { model: Program, as: 'firstChoice' },
                 { model: Program, as: 'secondChoice' },
                 { model: Program, as: 'thirdChoice' }
-
             ]
         });
 
@@ -57,14 +56,52 @@ const admitApplicant = async (req, res) => {
             return res.status(404).json({ message: 'Application not found' });
         }
 
-        const pdfPath = await generateAdmissionLetter(application.User, application.firstChoice, application.id);
+        const { Role } = require('../models');
+
+        // Get Settings for Prefix
+        const settingsList = await Setting.findAll();
+        const settings = {};
+        settingsList.forEach(s => settings[s.key] = s.value);
+        const schoolPrefix = settings.schoolAbbreviation || 'GUMS';
+
+        // 1. Generate Student ID
+        const currentYear = new Date().getFullYear();
+        const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+
+        const programCode = application.firstChoice ? application.firstChoice.code : 'GEN';
+        const studentId = `${schoolPrefix}${currentYear}${programCode}${randomSuffix}`.toUpperCase().replace(/\s/g, '');
+
+        // 2. Change Role to Student
+        const studentRole = await Role.findOne({ where: { name: 'student' } });
+        if (!studentRole) {
+            return res.status(500).json({ message: 'Student role not found' });
+        }
+
+        // 3. Update User
+        const user = await User.findByPk(application.userId);
+        user.roleId = studentRole.id;
+        user.studentId = studentId;
+        user.admittedProgramId = application.firstChoiceId; // Defaulting to first choice
+        await user.save();
+
+        const pdfPath = await generateAdmissionLetter(application.User, application.firstChoice, application.id, settings);
+        // Note: In registrarController, I saw `generateAdmissionLetter(user, program, application.id, settings)`. 
+        // The adminController one was `generateAdmissionLetter(application.User, application.firstChoice, application.id)`. 
+        // I should probably pass settings here too if the util expects it, but let's stick to just fixing the ID first unless I see the util code.
+        // Wait, registrarController passed settings. adminController logic was:
+        // const pdfPath = await generateAdmissionLetter(application.User, application.firstChoice, application.id);
+
+        // Let's assume generateAdmissionLetter signature is flexible or I should check it. 
+        // Checking registrarController again... it was: `generateAdmissionLetter(user, program, application.id, settings);`
+        // So I should probably update this call to match if I can.
 
         // Update application status
         application.status = 'Admitted';
         application.admissionLetter = `/uploads/admission_letters/${application.id}.pdf`;
+        application.admittedProgramId = application.firstChoiceId;
         await application.save();
 
-        res.json({ message: 'Applicant admitted and letter generated', application });
+        res.json({ message: 'Applicant admitted and letter generated', application, studentId });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -46,7 +46,11 @@ const generateAdmissionLetter = async (user, program, applicationId, settings) =
 
         // Recipient
         doc.text(`To: ${user.firstName} ${user.lastName}`);
-        doc.text(`Student ID: (Assigned Upon Registration)`);
+        if (user.studentId) {
+            doc.text(`Student ID: ${user.studentId}`);
+        } else {
+            doc.text(`Student ID: (Assigned Upon Registration)`);
+        }
         doc.moveDown();
 
         // Body

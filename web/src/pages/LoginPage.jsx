@@ -25,10 +25,19 @@ const LoginPage = () => {
         setError('');
         try {
             const user = await login(email, password);
-            if (user.role === 'applicant') navigate('/applicant');
+
+            if (user.role === 'student') {
+                // If login input looks like an email (contains @), go to applicant portal
+                // Otherwise (Student ID), go to student portal
+                if (email.includes('@')) {
+                    navigate('/applicant');
+                } else {
+                    navigate('/student');
+                }
+            }
+            else if (user.role === 'applicant') navigate('/applicant');
             else if (user.role === 'registrar') navigate('/registrar');
             else if (user.role === 'admin') navigate('/admin');
-            else if (user.role === 'student') navigate('/student');
             else if (user.role === 'staff') navigate('/staff');
             else if (user.role === 'accountant') navigate('/accountant');
             else navigate('/');
@@ -73,18 +82,19 @@ const LoginPage = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium mb-2">Email Address</label>
+                        <label className="block text-sm font-medium mb-2">Email Address or Student ID</label>
                         <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
                             <input
-                                type="email"
+                                type="text"
                                 required
                                 className="input-field pl-10"
-                                placeholder="email@example.com"
+                                placeholder="Email or Student ID"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
+
                     </div>
 
                     <div>

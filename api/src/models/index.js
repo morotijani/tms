@@ -19,6 +19,8 @@ const Setting = require('./Setting');
 
 User.belongsTo(Role, { foreignKey: 'roleId' });
 Role.hasMany(User, { foreignKey: 'roleId' });
+User.belongsTo(Program, { as: 'admittedProgram', foreignKey: 'admittedProgramId' });
+
 
 // Program and Course
 Program.hasMany(Course, { foreignKey: 'programId' });

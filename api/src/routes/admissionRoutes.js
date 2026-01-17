@@ -8,12 +8,12 @@ const { getPrograms, submitApplication, uploadDocuments, getMyApplication } = re
 router.get('/programs', getPrograms);
 
 // Protected routes for applicants
-router.get('/my-application', protect, authorize('applicant'), getMyApplication);
+router.get('/my-application', protect, authorize('applicant', 'student'), getMyApplication);
 
-router.post('/apply', protect, authorize('applicant'), submitApplication);
+router.post('/apply', protect, authorize('applicant', 'student'), submitApplication);
 
 
-router.post('/upload', protect, authorize('applicant'), upload.fields([
+router.post('/upload', protect, authorize('applicant', 'student'), upload.fields([
     { name: 'resultSlip', maxCount: 1 },
     { name: 'resultSlip2', maxCount: 1 },
     { name: 'resultSlip3', maxCount: 1 },

@@ -29,13 +29,13 @@ function App() {
               <Route path="/verify-payment" element={<VerifyPayment />} />
 
 
-              <Route path="/applicant/*" element={<ProtectedRoute><ApplicantDashboard /></ProtectedRoute>} />
-              <Route path="/registrar/*" element={<ProtectedRoute><RegistrarDashboard /></ProtectedRoute>} />
-              <Route path="/student/*" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/applicant/*" element={<ProtectedRoute allowedRoles={['applicant', 'student']}><ApplicantDashboard /></ProtectedRoute>} />
+              <Route path="/registrar/*" element={<ProtectedRoute allowedRoles={['registrar', 'admin']}><RegistrarDashboard /></ProtectedRoute>} />
+              <Route path="/student/*" element={<ProtectedRoute allowedRoles={['student']}><StudentDashboard /></ProtectedRoute>} />
 
-              <Route path="/staff/*" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
-              <Route path="/accountant/*" element={<ProtectedRoute><AccountantDashboard /></ProtectedRoute>} />
-              <Route path="/admin/*" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/staff/*" element={<ProtectedRoute allowedRoles={['staff', 'admin']}><StaffDashboard /></ProtectedRoute>} />
+              <Route path="/accountant/*" element={<ProtectedRoute allowedRoles={['accountant', 'admin']}><AccountantDashboard /></ProtectedRoute>} />
+              <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
 
 
 
