@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const { Payment, Invoice, Voucher, User } = require('../models');
 const paystack = require('../utils/paystack');
+const { sendVoucherEmail } = require('../utils/mail');
+
 
 // @desc    Handle Paystack Webhook
 // @route   POST /api/payments/webhook
@@ -45,7 +47,7 @@ const handleWebhook = async (req, res) => {
                 const serialNumber = 'V' + Math.floor(100000 + Math.random() * 900000);
                 const pin = Math.floor(1000 + Math.random() * 9000).toString();
 
-                await Voucher.create({
+                const voucher = await Voucher.create({
                     serialNumber,
                     pin,
                     status: 'Sold',
@@ -55,9 +57,11 @@ const handleWebhook = async (req, res) => {
                     transactionId: reference
                 });
 
-                // In a real app, send an SMS/Email to the customer with serial/pin
+                // Send Email to the customer with serial/pin
+                await sendVoucherEmail(customer.email, voucher);
                 console.log(`Voucher Generated: ${serialNumber} PIN: ${pin} for ${customer.email}`);
             }
+
         }
     }
     res.sendStatus(200);
@@ -147,7 +151,11 @@ const verifyVoucherTransaction = async (req, res) => {
                     soldAt: new Date(),
                     transactionId: paystackRef
                 });
+
+                // Send Email to the customer with serial/pin
+                await sendVoucherEmail(customer.email, voucher);
             }
+
 
             res.status(200).json({ status: 'success', voucher });
         } else {

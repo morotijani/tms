@@ -51,23 +51,25 @@ const submitApplication = async (req, res) => {
 
         const appData = {
             userId: req.user.id,
-            firstChoiceId,
-            secondChoiceId,
-            thirdChoiceId,
+            firstChoiceId: firstChoiceId || null,
+            secondChoiceId: secondChoiceId || null,
+            thirdChoiceId: thirdChoiceId || null,
             secondarySchoolName,
             secondarySchoolAddress,
-            secondarySchoolStartYear,
-            secondarySchoolEndYear,
+
+            secondarySchoolStartYear: secondarySchoolStartYear || null,
+            secondarySchoolEndYear: secondarySchoolEndYear || null,
             results,
             refereeName,
             refereeAddress,
             refereeContact,
             examType,
             indexNumber,
-            examYear,
+            examYear: examYear || null,
             voucherId: req.user.voucherId,
             status: req.body.status || 'Draft'
         };
+
 
 
 

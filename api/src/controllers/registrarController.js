@@ -12,7 +12,7 @@ const getSubmittedApplications = async (req, res) => {
             },
 
             include: [
-                { model: User, attributes: ['firstName', 'lastName', 'email', 'phoneNumber'] },
+                { model: User },
                 { model: Program, as: 'firstChoice' },
                 { model: Program, as: 'secondChoice' },
                 { model: Program, as: 'thirdChoice' }

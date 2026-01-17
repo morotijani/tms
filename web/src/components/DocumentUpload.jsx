@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from '../utils/api';
-import { Upload, File, CheckCircle, Loader2, Eye, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, File, CheckCircle, Loader2, Eye, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
+
 
 
 
@@ -104,6 +105,13 @@ const DocumentUpload = ({ application, setApplication }) => {
                     <CheckCircle size={20} /> Documents uploaded successfully!
                 </div>
             )}
+
+            {Object.keys(errors).length > 0 && (
+                <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg mb-8 flex items-center gap-2 animate-shake">
+                    <AlertCircle size={20} /> Please provide all required documents marked with an asterisk (*).
+                </div>
+            )}
+
 
             {!application?.results?.sittings && (
                 <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 p-4 rounded-lg mb-8 text-sm">

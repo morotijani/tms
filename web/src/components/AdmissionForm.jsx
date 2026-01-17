@@ -212,7 +212,12 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
             }
             if (!allValid) return;
+
+            if (!window.confirm("Are you sure you want to submit your application? No further changes can be made once submitted.")) {
+                return;
+            }
         }
+
 
         setLoading(true);
         setSuccess(false);
