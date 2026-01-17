@@ -95,8 +95,9 @@ const ApplicantDashboard = () => {
             {/* Sidebar */}
             <aside className={`
                 fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
-                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen sticky top-0
+                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+
             `}>
 
                 <div className="flex items-center gap-3">
@@ -125,7 +126,8 @@ const ApplicantDashboard = () => {
                             }}
                             className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeTab === item.id
                                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                : 'text-text-muted hover:bg-surface hover:text-text'
+                                : 'text-text/60 hover:bg-surface hover:text-text'
+
                                 }`}
                         >
 

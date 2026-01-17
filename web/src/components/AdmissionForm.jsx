@@ -485,12 +485,14 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                 </div>
             )}
 
-            <div className="glass-card p-6 sm:p-10 border-border bg-surface/50">
+            <div className="glass-card p-4 sm:p-10 border-border bg-surface/50 overflow-hidden relative">
+
 
                 <form onSubmit={handleSubmit}>
                     <AnimatePresence mode="wait">
                         {step === 1 && (
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} key="step1" className="space-y-8">
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} key="step1" className="space-y-8">
+
                                 <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">Personal Details</h2>
 
 
@@ -621,7 +623,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                         )}
 
                         {step === 2 && (
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} key="step2" className="space-y-8">
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} key="step2" className="space-y-8">
+
                                 <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">Educational Background</h2>
                                 <div className="p-6 bg-primary/5 border border-primary/10 rounded-2xl flex items-center gap-4">
                                     <div className="w-12 h-12 bg-primary/20 text-primary rounded-xl flex items-center justify-center shrink-0">
@@ -758,7 +761,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                         )}
 
                         {step === 3 && (
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} key="step3" className="space-y-8">
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} key="step3" className="space-y-8">
+
                                 <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">Program Selection</h2>
                                 <p className="text-text-muted">Please select three programs in order of preference.</p>
 
@@ -796,7 +800,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
 
                         {step === 4 && (
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} key="step4" className="space-y-8">
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} key="step4" className="space-y-8">
+
                                 <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">Referee & Declaration</h2>
 
 

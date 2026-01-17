@@ -101,8 +101,9 @@ const AdminDashboard = () => {
             {/* Sidebar */}
             <aside className={`
                 fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
-                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen sticky top-0
+                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+
             `}>
 
                 <div className="flex items-center gap-3">
@@ -132,7 +133,8 @@ const AdminDashboard = () => {
                             }}
                             className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeTab === item.id
                                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                : 'text-text-muted hover:bg-surface hover:text-text'
+                                : 'text-text/60 hover:bg-surface hover:text-text'
+
                                 }`}
                         >
 
@@ -177,45 +179,49 @@ const AdminDashboard = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="glass-card overflow-hidden"
                         >
-                            <table className="w-full text-left">
-                                <thead className="bg-surface border-b border-border">
-                                    <tr>
-                                        <th className="p-4 text-left text-xs font-bold text-text-muted uppercase tracking-widest">Applicant</th>
-                                        <th className="p-4 text-left text-xs font-bold text-text-muted uppercase tracking-widest">Voucher</th>
-                                        <th className="p-4 text-left text-xs font-bold text-text-muted uppercase tracking-widest">Status</th>
-                                        <th className="p-4 text-left text-xs font-bold text-text-muted uppercase tracking-widest">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border">
-                                    {applications.map((app) => (
-                                        <tr key={app.id} className="border-b border-border hover:bg-surface/50 transition-colors">
-                                            <td className="p-4">
-                                                <p className="font-bold text-text">{app.User?.firstName} {app.User?.lastName}</p>
-                                                <p className="text-xs text-text-muted">{app.User?.email}</p>
-                                            </td>
-                                            <td className="p-4 font-mono text-xs text-text-muted">{app.voucherId || 'N/A'}</td>
-                                            <td className="p-4">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${app.status === 'Admitted' ? 'bg-success/10 text-success border border-success/20' : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
-                                                    }`}>
-                                                    {app.status}
-                                                </span>
-                                            </td>
-                                            <td className="p-4">
-                                                {app.status !== 'Admitted' && (
-                                                    <button
-                                                        onClick={() => handleAdmit(app.id)}
-                                                        className="p-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg transition-all"
-                                                        title="Admit Student"
-                                                    >
-                                                        <Check size={18} />
-                                                    </button>
-                                                )}
-                                            </td>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left min-w-[600px] md:min-w-full">
+
+                                    <thead className="bg-surface border-b border-border">
+                                        <tr>
+                                            <th className="p-4 text-left text-xs font-bold text-text-muted uppercase tracking-widest">Applicant</th>
+                                            <th className="p-4 text-left text-xs font-bold text-text-muted uppercase tracking-widest">Voucher</th>
+                                            <th className="p-4 text-left text-xs font-bold text-text-muted uppercase tracking-widest">Status</th>
+                                            <th className="p-4 text-left text-xs font-bold text-text-muted uppercase tracking-widest">Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                        {applications.map((app) => (
+                                            <tr key={app.id} className="border-b border-border hover:bg-surface/50 transition-colors">
+                                                <td className="p-4">
+                                                    <p className="font-bold text-text">{app.User?.firstName} {app.User?.lastName}</p>
+                                                    <p className="text-xs text-text-muted">{app.User?.email}</p>
+                                                </td>
+                                                <td className="p-4 font-mono text-xs text-text-muted">{app.voucherId || 'N/A'}</td>
+                                                <td className="p-4">
+                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${app.status === 'Admitted' ? 'bg-success/10 text-success border border-success/20' : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                                                        }`}>
+                                                        {app.status}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4">
+                                                    {app.status !== 'Admitted' && (
+                                                        <button
+                                                            onClick={() => handleAdmit(app.id)}
+                                                            className="p-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg transition-all"
+                                                            title="Admit Student"
+                                                        >
+                                                            <Check size={18} />
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </motion.div>
+
                     )}
 
                     {activeTab === 'curriculum' && (

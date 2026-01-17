@@ -143,8 +143,9 @@ const RegistrarDashboard = () => {
             {/* Sidebar */}
             <aside className={`
                 fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
-                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen sticky top-0
+                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+
             `}>
 
                 <div className="flex items-center gap-3 text-text">
@@ -167,10 +168,12 @@ const RegistrarDashboard = () => {
                     <button className="flex items-center gap-3 p-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-all">
                         <Users size={20} /> Applications
                     </button>
-                    <button className="flex items-center gap-3 p-3 rounded-xl text-text-muted hover:bg-surface transition-colors">
+                    <button className="flex items-center gap-3 p-3 rounded-xl text-text/60 hover:bg-surface hover:text-text transition-colors">
+
                         <GraduationCap size={20} /> Students
                     </button>
-                    <button className="flex items-center gap-3 p-3 rounded-xl text-text-muted hover:bg-surface transition-colors">
+                    <button className="flex items-center gap-3 p-3 rounded-xl text-text/60 hover:bg-surface hover:text-text transition-colors">
+
                         <BookOpen size={20} /> Programs
                     </button>
                 </nav>
@@ -228,12 +231,20 @@ const RegistrarDashboard = () => {
                                 key={app.id}
                                 layoutId={app.id}
                                 onClick={() => { setSelectedApp(app); setShowDetail(true); }}
-                                className="glass-card p-4 flex items-center justify-between group cursor-pointer hover:border-primary/50 transition-all border-border bg-surface/50"
+                                className="glass-card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between group cursor-pointer hover:border-primary/50 transition-all border-border bg-surface/50 gap-4"
                             >
-                                <div className="flex items-center gap-6">
-                                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-black text-xl shadow-inner">
-                                        {app.User?.firstName?.[0]}{app.User?.lastName?.[0]}
-                                    </div>
+                                <div className="flex items-center gap-4 sm:gap-6">
+
+                                    {app.passportPhoto ? (
+                                        <div className="w-14 h-14 rounded-2xl overflow-hidden border border-primary/20 shadow-inner">
+                                            <img src={`http://localhost:5000${app.passportPhoto}`} alt="Passport" className="w-full h-full object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-black text-xl shadow-inner">
+                                            {app.User?.firstName?.[0]}{app.User?.lastName?.[0]}
+                                        </div>
+                                    )}
+
                                     <div>
                                         <h3 className="font-black text-lg uppercase tracking-tight group-hover:text-primary transition-colors text-text">
                                             {app.User?.firstName} {app.User?.lastName}
@@ -249,7 +260,7 @@ const RegistrarDashboard = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-8">
+                                <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 w-full sm:w-auto mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
                                     <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${app.status === 'Submitted' ? 'bg-primary/10 text-primary border-primary/20' :
                                         app.status === 'Admitted' ? 'bg-success/10 text-success border-success/20' :
                                             'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
@@ -258,6 +269,7 @@ const RegistrarDashboard = () => {
                                     </span>
                                     <ChevronRight className="text-text-muted/30 group-hover:text-primary transition-transform group-hover:translate-x-1" />
                                 </div>
+
                             </motion.div>
                         )) : (
                             <div className="text-center py-20 bg-surface/20 rounded-2xl border border-dashed border-border">
@@ -285,29 +297,31 @@ const RegistrarDashboard = () => {
                             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                             className="w-full max-w-5xl h-full bg-background border-l border-border z-10 flex flex-col shadow-2xl"
                         >
-                            <header className="p-6 border-b border-border flex justify-between items-center bg-surface/50 backdrop-blur-md">
-                                <button onClick={() => setShowDetail(false)} className="text-text-muted hover:text-text flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-colors">
+                            <header className="p-4 sm:p-6 border-b border-border flex flex-col sm:flex-row justify-between items-center bg-surface/50 backdrop-blur-md gap-4">
+                                <button onClick={() => setShowDetail(false)} className="text-text-muted hover:text-text flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-colors w-full sm:w-auto">
                                     <X size={20} /> Close Profile
                                 </button>
 
 
+
                                 {selectedApp.status === 'Submitted' && (
-                                    <div className="flex gap-3">
+                                    <div className="flex gap-3 w-full sm:w-auto justify-center">
                                         <button
                                             disabled={actionLoading}
                                             onClick={() => setShowAdmitModal(true)}
-                                            className="btn bg-success hover:bg-success/90 text-white py-2 px-8 flex items-center gap-2 font-black uppercase text-xs tracking-widest transition-all hover:scale-105 shadow-lg shadow-success/20"
+                                            className="btn bg-success hover:bg-success/90 text-white py-2 px-6 sm:px-8 flex-1 sm:flex-none items-center gap-2 font-black uppercase text-[10px] sm:text-xs tracking-widest transition-all hover:scale-105 shadow-lg shadow-success/20"
                                         >
-                                            <CheckCircle size={18} /> Approve & Admit
+                                            <CheckCircle size={18} /> Approve
                                         </button>
                                         <button
                                             disabled={actionLoading}
                                             onClick={handleReject}
-                                            className="btn bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white py-2 px-8 flex items-center gap-2 font-black uppercase text-xs tracking-widest transition-all"
+                                            className="btn bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white py-2 px-6 sm:px-8 flex-1 sm:flex-none items-center gap-2 font-black uppercase text-[10px] sm:text-xs tracking-widest transition-all"
                                         >
                                             <XCircle size={18} /> Reject
                                         </button>
                                     </div>
+
 
                                 )}
 
@@ -319,7 +333,8 @@ const RegistrarDashboard = () => {
 
                             </header>
 
-                            <div className="flex-1 overflow-y-auto p-4 md:p-12 relative bg-background">
+                            <div className="flex-1 overflow-y-auto p-2 sm:p-6 md:p-12 relative bg-background">
+
 
                                 <AdmissionForm
                                     application={selectedApp}
