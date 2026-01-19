@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
-const { createProgram, generateVouchers, admitApplicant, getApplications } = require('../controllers/adminController');
+const { createProgram, generateVouchers, admitApplicant, getApplications, updateProgram, deleteProgram } = require('../controllers/adminController');
 const { exportNSSData } = require('../controllers/exportController');
 
 
@@ -9,6 +9,8 @@ router.use(protect);
 
 // Program Management
 router.post('/programs', authorize('admin', 'registrar'), createProgram);
+router.put('/programs/:id', authorize('admin', 'registrar'), updateProgram);
+router.delete('/programs/:id', authorize('admin', 'registrar'), deleteProgram);
 
 // Voucher Management
 router.post('/vouchers/generate', authorize('admin'), generateVouchers);

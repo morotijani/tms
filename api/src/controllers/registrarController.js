@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Application, User, Program, Setting } = require('../models');
+const { Application, User, Program, Setting, Role } = require('../models');
 const { generateAdmissionLetter } = require('../utils/pdfGenerator');
 const { sendAdmissionEmail } = require('../utils/mail');
 const { sendAdmissionSMS } = require('../utils/sms');
@@ -47,7 +47,6 @@ const updateApplicationStatus = async (req, res) => {
         if (status === 'Admitted' && admittedProgramId) {
             const program = await Program.findByPk(admittedProgramId);
             const user = await User.findByPk(application.userId);
-            const { Role } = require('../models');
 
             // Get current school settings
             const settingsList = await Setting.findAll();
@@ -100,7 +99,45 @@ const updateApplicationStatus = async (req, res) => {
     }
 };
 
+// @desc    Get all admitted students
+// @route   GET /api/registrar/students
+// @access  Private/Registrar
+const getStudents = async (req, res) => {
+    try {
+        const students = await User.findAll({
+            include: [
+                {
+                    model: Role,
+                    where: { name: 'student' }
+                },
+                {
+                    model: Program,
+                    as: 'admittedProgram'
+                }
+            ],
+            attributes: { exclude: ['password'] }
+        });
+        res.json(students);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all programs
+// @route   GET /api/registrar/programs
+// @access  Private/Registrar
+const getPrograms = async (req, res) => {
+    try {
+        const programs = await Program.findAll();
+        res.json(programs);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getSubmittedApplications,
-    updateApplicationStatus
+    updateApplicationStatus,
+    getStudents,
+    getPrograms
 };

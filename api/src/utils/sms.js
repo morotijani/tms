@@ -37,7 +37,7 @@ const sendSMS = async (to, message) => {
 };
 
 const sendVoucherSMS = async (to, voucher, schoolAbbreviation) => {
-    const message = `Voucher Purchased!\nSchool: ${schoolAbbreviation}\nSerial: ${voucher.serialNumber}\nPIN: ${voucher.pin}\nUse these to apply.`;
+    const message = `Voucher Purchased!\nSchool: ${schoolAbbreviation}\nSerial: ${voucher.serialNumber}\nPIN: ${voucher.pin}\nApply here: http://localhost:5173/register`;
     return await sendSMS(to, message);
 };
 

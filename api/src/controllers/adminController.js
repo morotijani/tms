@@ -138,10 +138,34 @@ const getApplications = async (req, res) => {
     }
 };
 
+const updateProgram = async (req, res) => {
+    try {
+        const program = await Program.findByPk(req.params.id);
+        if (!program) return res.status(404).json({ message: 'Program not found' });
+        await program.update(req.body);
+        res.json(program);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const deleteProgram = async (req, res) => {
+    try {
+        const program = await Program.findByPk(req.params.id);
+        if (!program) return res.status(404).json({ message: 'Program not found' });
+        await program.destroy();
+        res.json({ message: 'Program deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createProgram,
     generateVouchers,
     admitApplicant,
-    getApplications
+    getApplications,
+    updateProgram,
+    deleteProgram
 };
 

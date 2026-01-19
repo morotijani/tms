@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import {
@@ -15,10 +16,126 @@ import { useSettings } from '../context/SettingsContext';
 
 
 
+import RegistrarStudents from './RegistrarStudents';
+import RegistrarPrograms from './RegistrarPrograms';
+
 const RegistrarDashboard = () => {
     const { user, logout } = useAuth();
     const { settings } = useSettings();
 
+    // State management is now handled in sub-components
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+
+
+
+    const location = useLocation();
+
+    // Active link helper
+    const isActive = (path) => {
+        if (path === '/registrar' && location.pathname === '/registrar') return true;
+        return location.pathname.startsWith(path) && path !== '/registrar';
+    };
+
+    return (
+        <div className="bg-background min-h-screen text-text flex font-sans transition-colors duration-300">
+            {/* Mobile Header */}
+            <header className="md:hidden fixed top-0 left-0 right-0 bg-surface/80 backdrop-blur-lg border-b border-border z-40 p-4 flex justify-between items-center transition-colors duration-300">
+                <div className="flex items-center gap-2">
+                    {settings.schoolLogo ? (
+                        <img src={`http://localhost:5000${settings.schoolLogo}`} alt="Logo" className="w-8 h-8 object-contain" />
+                    ) : (
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-bold text-white">
+                            {settings.schoolAbbreviation?.charAt(0) || 'R'}
+                        </div>
+                    )}
+                    <span className="font-bold font-heading">{settings.schoolAbbreviation || 'GUMS'}</span>
+                </div>
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 hover:bg-surface rounded-lg transition-colors"
+                >
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </header>
+
+            {/* Sidebar Overlay */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* Sidebar */}
+            <aside className={`
+                fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
+                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}>
+
+                <div className="flex items-center gap-3 text-text">
+                    {settings.schoolLogo ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-white flex items-center justify-center p-1">
+                            <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
+                        </div>
+                    ) : (
+                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-primary/20">
+                            {settings.schoolAbbreviation?.charAt(0) || 'R'}
+                        </div>
+                    )}
+                    <span className="text-2xl font-bold font-heading tracking-tighter">
+                        {settings.schoolAbbreviation || 'GUMS'}<span className="text-primary italic">.</span>
+                    </span>
+                </div>
+
+
+                <nav className="flex flex-col gap-2">
+                    <Link to="/registrar" onClick={() => setIsMobileMenuOpen(false)}>
+                        <div className={`flex items-center gap-3 p-3 rounded-xl transition-all ${isActive('/registrar') ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text/60 hover:bg-surface hover:text-text'}`}>
+                            <Users size={20} /> Applications
+                        </div>
+                    </Link>
+                    <Link to="/registrar/students" onClick={() => setIsMobileMenuOpen(false)}>
+                        <div className={`flex items-center gap-3 p-3 rounded-xl transition-all ${isActive('/registrar/students') ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text/60 hover:bg-surface hover:text-text'}`}>
+                            <GraduationCap size={20} /> Students
+                        </div>
+                    </Link>
+                    <Link to="/registrar/programs" onClick={() => setIsMobileMenuOpen(false)}>
+                        <div className={`flex items-center gap-3 p-3 rounded-xl transition-all ${isActive('/registrar/programs') ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text/60 hover:bg-surface hover:text-text'}`}>
+                            <BookOpen size={20} /> Programs
+                        </div>
+                    </Link>
+                </nav>
+
+                <div className="mt-auto space-y-4">
+                    <ThemeToggle />
+                    <button onClick={logout} className="flex items-center gap-3 p-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl transition-colors font-medium">
+                        <LogOut size={20} /> Logout
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main Content Area with Routes */}
+            <main className="flex-1 transition-all duration-300 overflow-hidden">
+                <Routes>
+                    <Route index element={<RegistrarApplicationsContent user={user} />} />
+                    <Route path="students" element={<RegistrarStudents />} />
+                    <Route path="programs" element={<RegistrarPrograms />} />
+                </Routes>
+            </main>
+        </div>
+    );
+};
+
+// Extracted internal component for the Applications View (original content)
+const RegistrarApplicationsContent = ({ user }) => {
+    const { settings } = useSettings();
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedApp, setSelectedApp] = useState(null);
@@ -31,8 +148,6 @@ const RegistrarDashboard = () => {
     const [showAdmitModal, setShowAdmitModal] = useState(false);
     const [selectedAdmittedProgramId, setSelectedAdmittedProgramId] = useState('');
     const [docViewer, setDocViewer] = useState({ show: false, label: '', path: '' });
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
 
     useEffect(() => {
         fetchApplications();
@@ -106,179 +221,97 @@ const RegistrarDashboard = () => {
     };
 
     return (
-        <div className="bg-background min-h-screen text-text flex font-sans transition-colors duration-300">
-            {/* Mobile Header */}
-            <header className="md:hidden fixed top-0 left-0 right-0 bg-surface/80 backdrop-blur-lg border-b border-border z-40 p-4 flex justify-between items-center transition-colors duration-300">
-                <div className="flex items-center gap-2">
-                    {settings.schoolLogo ? (
-                        <img src={`http://localhost:5000${settings.schoolLogo}`} alt="Logo" className="w-8 h-8 object-contain" />
-                    ) : (
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-bold text-white">
-                            {settings.schoolAbbreviation?.charAt(0) || 'R'}
-                        </div>
-                    )}
-                    <span className="font-bold font-heading">{settings.schoolAbbreviation || 'GUMS'}</span>
+        <div className="p-4 md:p-8 pt-20 md:pt-8 w-full">
+            <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-black font-heading text-text">Admissions</h1>
+                    <p className="text-text-muted font-medium">Review and process student applications.</p>
                 </div>
-                <button
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-2 hover:bg-surface rounded-lg transition-colors"
-                >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+
+                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                    <div className="glass-card flex items-center gap-3 px-4 py-2 border-border bg-surface/50 w-full md:w-auto relative">
+                        <Search className="text-text-muted" size={18} />
+                        <input
+                            className="bg-transparent outline-none text-sm w-full md:w-64"
+                            placeholder="Search by name or email..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <button className="btn bg-surface border-border text-text-muted flex items-center justify-center gap-2 h-12 px-6 hover:bg-surface-hover w-full md:w-auto">
+                        <Filter size={18} /> Filter
+                    </button>
+                </div>
+
             </header>
 
-            {/* Sidebar Overlay */}
-            <AnimatePresence>
-                {isMobileMenuOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-                    />
-                )}
-            </AnimatePresence>
-
-            {/* Sidebar */}
-            <aside className={`
-                fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
-                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
-                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-
-            `}>
-
-                <div className="flex items-center gap-3 text-text">
-                    {settings.schoolLogo ? (
-                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-white flex items-center justify-center p-1">
-                            <img src={`http://localhost:5000${settings.schoolLogo}`} alt="School Logo" className="w-full h-full object-contain" />
-                        </div>
-                    ) : (
-                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-primary/20">
-                            {settings.schoolAbbreviation?.charAt(0) || 'R'}
-                        </div>
-                    )}
-                    <span className="text-2xl font-bold font-heading tracking-tighter">
-                        {settings.schoolAbbreviation || 'GUMS'}<span className="text-primary italic">.</span>
-                    </span>
+            {error && (
+                <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-xl mb-8 flex items-center gap-2">
+                    <XCircle size={20} /> {error}
                 </div>
+            )}
 
-
-                <nav className="flex flex-col gap-2">
-                    <button className="flex items-center gap-3 p-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-all">
-                        <Users size={20} /> Applications
-                    </button>
-                    <button className="flex items-center gap-3 p-3 rounded-xl text-text/60 hover:bg-surface hover:text-text transition-colors">
-
-                        <GraduationCap size={20} /> Students
-                    </button>
-                    <button className="flex items-center gap-3 p-3 rounded-xl text-text/60 hover:bg-surface hover:text-text transition-colors">
-
-                        <BookOpen size={20} /> Programs
-                    </button>
-                </nav>
-
-                <div className="mt-auto space-y-4">
-                    <ThemeToggle />
-                    <button onClick={logout} className="flex items-center gap-3 p-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl transition-colors font-medium">
-                        <LogOut size={20} /> Logout
-                    </button>
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                    <Loader2 className="animate-spin text-primary" size={48} />
+                    <p className="text-text-muted font-bold uppercase text-xs tracking-widest mt-4">Loading Applications...</p>
                 </div>
-            </aside>
+            ) : (
+                <div className="grid grid-cols-1 gap-4">
+                    {filteredApps.length > 0 ? filteredApps.map(app => (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            key={app.id}
+                            layoutId={app.id}
+                            onClick={() => { setSelectedApp(app); setShowDetail(true); }}
+                            className="glass-card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between group cursor-pointer hover:border-primary/50 transition-all border-border bg-surface/50 gap-4"
+                        >
+                            <div className="flex items-center gap-4 sm:gap-6">
 
-            {/* Main Area */}
-            <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 transition-all duration-300">
-                <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-3xl font-black font-heading text-text">Admissions</h1>
-                        <p className="text-text-muted font-medium">Review and process student applications.</p>
-                    </div>
+                                {app.passportPhoto ? (
+                                    <div className="w-14 h-14 rounded-2xl overflow-hidden border border-primary/20 shadow-inner">
+                                        <img src={`http://localhost:5000${app.passportPhoto}`} alt="Passport" className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-black text-xl shadow-inner">
+                                        {app.User?.firstName?.[0]}{app.User?.lastName?.[0]}
+                                    </div>
+                                )}
 
-                    <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-                        <div className="glass-card flex items-center gap-3 px-4 py-2 border-border bg-surface/50 w-full md:w-auto relative">
-                            <Search className="text-text-muted" size={18} />
-                            <input
-                                className="bg-transparent outline-none text-sm w-full md:w-64"
-                                placeholder="Search by name or email..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <button className="btn bg-surface border-border text-text-muted flex items-center justify-center gap-2 h-12 px-6 hover:bg-surface-hover w-full md:w-auto">
-                            <Filter size={18} /> Filter
-                        </button>
-                    </div>
-
-                </header>
-
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-xl mb-8 flex items-center gap-2">
-                        <XCircle size={20} /> {error}
-                    </div>
-                )}
-
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <Loader2 className="animate-spin text-primary" size={48} />
-                        <p className="text-text-muted font-bold uppercase text-xs tracking-widest mt-4">Loading Applications...</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-4">
-                        {filteredApps.length > 0 ? filteredApps.map(app => (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                key={app.id}
-                                layoutId={app.id}
-                                onClick={() => { setSelectedApp(app); setShowDetail(true); }}
-                                className="glass-card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between group cursor-pointer hover:border-primary/50 transition-all border-border bg-surface/50 gap-4"
-                            >
-                                <div className="flex items-center gap-4 sm:gap-6">
-
-                                    {app.passportPhoto ? (
-                                        <div className="w-14 h-14 rounded-2xl overflow-hidden border border-primary/20 shadow-inner">
-                                            <img src={`http://localhost:5000${app.passportPhoto}`} alt="Passport" className="w-full h-full object-cover" />
-                                        </div>
-                                    ) : (
-                                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-black text-xl shadow-inner">
-                                            {app.User?.firstName?.[0]}{app.User?.lastName?.[0]}
-                                        </div>
-                                    )}
-
-                                    <div>
-                                        <h3 className="font-black text-lg uppercase tracking-tight group-hover:text-primary transition-colors text-text">
-                                            {app.User?.firstName} {app.User?.lastName}
-                                        </h3>
-                                        <div className="flex flex-wrap gap-4 mt-1">
-                                            <span className="flex items-center gap-1 text-text-muted font-bold uppercase tracking-widest text-[10px]">
-                                                <Users size={12} /> STU-00{app.User?.id}
-                                            </span>
-                                            <span className="flex items-center gap-1 font-mono uppercase text-text-muted/70 text-[10px]">
-                                                Ref: {app.voucherId || 'N/A'}
-                                            </span>
-                                        </div>
+                                <div>
+                                    <h3 className="font-black text-lg uppercase tracking-tight group-hover:text-primary transition-colors text-text">
+                                        {app.User?.firstName} {app.User?.lastName}
+                                    </h3>
+                                    <div className="flex flex-wrap gap-4 mt-1">
+                                        <span className="flex items-center gap-1 text-text-muted font-bold uppercase tracking-widest text-[10px]">
+                                            <Users size={12} /> STU-00{app.User?.id}
+                                        </span>
+                                        <span className="flex items-center gap-1 font-mono uppercase text-text-muted/70 text-[10px]">
+                                            Ref: {app.voucherId || 'N/A'}
+                                        </span>
                                     </div>
                                 </div>
-
-                                <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 w-full sm:w-auto mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
-                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${app.status === 'Submitted' ? 'bg-primary/10 text-primary border-primary/20' :
-                                        app.status === 'Admitted' ? 'bg-success/10 text-success border-success/20' :
-                                            'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
-                                        }`}>
-                                        {app.status}
-                                    </span>
-                                    <ChevronRight className="text-text-muted/30 group-hover:text-primary transition-transform group-hover:translate-x-1" />
-                                </div>
-
-                            </motion.div>
-                        )) : (
-                            <div className="text-center py-20 bg-surface/20 rounded-2xl border border-dashed border-border">
-                                <p className="text-text-muted font-bold uppercase tracking-widest text-sm">No applications found</p>
                             </div>
-                        )}
-                    </div>
-                )}
-            </main>
+
+                            <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 w-full sm:w-auto mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
+                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${app.status === 'Submitted' ? 'bg-primary/10 text-primary border-primary/20' :
+                                    app.status === 'Admitted' ? 'bg-success/10 text-success border-success/20' :
+                                        'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                                    }`}>
+                                    {app.status}
+                                </span>
+                                <ChevronRight className="text-text-muted/30 group-hover:text-primary transition-transform group-hover:translate-x-1" />
+                            </div>
+
+                        </motion.div>
+                    )) : (
+                        <div className="text-center py-20 bg-surface/20 rounded-2xl border border-dashed border-border">
+                            <p className="text-text-muted font-bold uppercase tracking-widest text-sm">No applications found</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Detail Overlay / Modal */}
             <AnimatePresence>
@@ -470,5 +503,6 @@ const RegistrarDashboard = () => {
         </div>
     );
 };
+
 
 export default RegistrarDashboard;

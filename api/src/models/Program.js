@@ -31,6 +31,15 @@ const Program = sequelize.define('Program', {
     duration: {
         type: DataTypes.INTEGER, // in years
         allowNull: false
+    },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    fee: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+        defaultValue: 0.00
     }
 }, {
     timestamps: true
