@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const { Application, User, Program, Setting } = require('../models');
 const { generateAdmissionLetter } = require('../utils/pdfGenerator');
+const { sendAdmissionEmail } = require('../utils/mail');
 const path = require('path');
 
 
@@ -78,6 +79,9 @@ const updateApplicationStatus = async (req, res) => {
             // Convert absolute path to relative for public access
             application.admissionLetter = `/uploads/admission_letters/${application.id}.pdf`;
             application.admittedProgramId = admittedProgramId;
+
+            // Send Email
+            await sendAdmissionEmail(user.email, user, program.name, pdfPath, settings);
         }
 
         application.status = status;

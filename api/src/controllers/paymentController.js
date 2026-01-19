@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { Payment, Invoice, Voucher, User } = require('../models');
+const { Payment, Invoice, Voucher, User, Setting } = require('../models');
 const paystack = require('../utils/paystack');
 const { sendVoucherEmail } = require('../utils/mail');
 
@@ -57,8 +57,13 @@ const handleWebhook = async (req, res) => {
                     transactionId: reference
                 });
 
+                // Fetch Settings for Email
+                const settingsList = await Setting.findAll();
+                const settings = {};
+                settingsList.forEach(s => settings[s.key] = s.value);
+
                 // Send Email to the customer with serial/pin
-                await sendVoucherEmail(customer.email, voucher);
+                await sendVoucherEmail(customer.email, voucher, settings);
                 console.log(`Voucher Generated: ${serialNumber} PIN: ${pin} for ${customer.email}`);
             }
 
@@ -152,8 +157,13 @@ const verifyVoucherTransaction = async (req, res) => {
                     transactionId: paystackRef
                 });
 
+                // Fetch Settings for Email
+                const settingsList = await Setting.findAll();
+                const settings = {};
+                settingsList.forEach(s => settings[s.key] = s.value);
+
                 // Send Email to the customer with serial/pin
-                await sendVoucherEmail(customer.email, voucher);
+                await sendVoucherEmail(customer.email, voucher, settings);
             }
 
 

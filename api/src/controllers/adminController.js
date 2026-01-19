@@ -1,6 +1,7 @@
 const { Application, User, Program, Voucher, Setting } = require('../models');
 const crypto = require('crypto');
 const { generateAdmissionLetter } = require('../utils/pdfGenerator');
+const { sendAdmissionEmail } = require('../utils/mail');
 
 // @desc    Create a new academic program
 // @route   POST /api/admin/programs
@@ -85,13 +86,13 @@ const admitApplicant = async (req, res) => {
         await user.save();
 
         const pdfPath = await generateAdmissionLetter(application.User, application.firstChoice, application.id, settings);
-        // Note: In registrarController, I saw `generateAdmissionLetter(user, program, application.id, settings)`. 
-        // The adminController one was `generateAdmissionLetter(application.User, application.firstChoice, application.id)`. 
+        // Note: In registrarController, I saw `generateAdmissionLetter(user, program, application.id, settings)`.
+        // The adminController one was `generateAdmissionLetter(application.User, application.firstChoice, application.id)`.
         // I should probably pass settings here too if the util expects it, but let's stick to just fixing the ID first unless I see the util code.
         // Wait, registrarController passed settings. adminController logic was:
         // const pdfPath = await generateAdmissionLetter(application.User, application.firstChoice, application.id);
 
-        // Let's assume generateAdmissionLetter signature is flexible or I should check it. 
+        // Let's assume generateAdmissionLetter signature is flexible or I should check it.
         // Checking registrarController again... it was: `generateAdmissionLetter(user, program, application.id, settings);`
         // So I should probably update this call to match if I can.
 
@@ -100,6 +101,12 @@ const admitApplicant = async (req, res) => {
         application.admissionLetter = `/uploads/admission_letters/${application.id}.pdf`;
         application.admittedProgramId = application.firstChoiceId;
         await application.save();
+
+        // Send Email
+        // Assuming 'program' is application.firstChoice.
+        // We need to fetch program name if not eagerly loaded or use firstChoice loaded in query.
+        const admittedProgramName = application.firstChoice ? application.firstChoice.name : 'your program';
+        await sendAdmissionEmail(application.User.email, user, admittedProgramName, pdfPath, settings);
 
         res.json({ message: 'Applicant admitted and letter generated', application, studentId });
     } catch (error) {
