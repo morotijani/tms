@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const { Application, User, Program, Setting } = require('../models');
 const { generateAdmissionLetter } = require('../utils/pdfGenerator');
 const { sendAdmissionEmail } = require('../utils/mail');
+const { sendAdmissionSMS } = require('../utils/sms');
 const path = require('path');
 
 
@@ -82,6 +83,9 @@ const updateApplicationStatus = async (req, res) => {
 
             // Send Email
             await sendAdmissionEmail(user.email, user, program.name, pdfPath, settings);
+
+            // Send SMS
+            await sendAdmissionSMS(user.phoneNumber, user, program.name, settings.schoolAbbreviation);
         }
 
         application.status = status;

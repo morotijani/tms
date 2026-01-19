@@ -2,6 +2,7 @@ const { Application, User, Program, Voucher, Setting } = require('../models');
 const crypto = require('crypto');
 const { generateAdmissionLetter } = require('../utils/pdfGenerator');
 const { sendAdmissionEmail } = require('../utils/mail');
+const { sendAdmissionSMS } = require('../utils/sms');
 
 // @desc    Create a new academic program
 // @route   POST /api/admin/programs
@@ -107,6 +108,9 @@ const admitApplicant = async (req, res) => {
         // We need to fetch program name if not eagerly loaded or use firstChoice loaded in query.
         const admittedProgramName = application.firstChoice ? application.firstChoice.name : 'your program';
         await sendAdmissionEmail(application.User.email, user, admittedProgramName, pdfPath, settings);
+
+        // Send SMS
+        await sendAdmissionSMS(user.phoneNumber, user, admittedProgramName, settings.schoolAbbreviation);
 
         res.json({ message: 'Applicant admitted and letter generated', application, studentId });
     } catch (error) {

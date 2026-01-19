@@ -132,6 +132,23 @@ const User = sequelize.define('User', {
 
 }, {
     timestamps: true,
+    indexes: [
+        {
+            unique: true,
+            fields: ['username'],
+            name: 'users_username_unique'
+        },
+        {
+            unique: true,
+            fields: ['email'],
+            name: 'users_email_unique'
+        },
+        {
+            unique: true,
+            fields: ['studentId'],
+            name: 'users_studentId_unique'
+        }
+    ],
     hooks: {
         beforeCreate: async (user) => {
             if (user.password) {

@@ -10,6 +10,7 @@ import { useSettings } from '../context/SettingsContext';
 const PurchaseVoucher = () => {
     const { settings } = useSettings();
     const [email, setEmail] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
 
     const [voucherType, setVoucherType] = useState('Undergraduate');
     const [loading, setLoading] = useState(false);
@@ -31,8 +32,10 @@ const PurchaseVoucher = () => {
         try {
             const { data } = await axios.post('http://localhost:5000/api/payments/initialize-voucher', {
                 email,
+                phoneNumber,
                 voucherType,
-                amount: selectedVoucher.price * 100, // Amount in pesewas
+                // amount: selectedVoucher.price * 100, // Amount in pesewas
+                amount: selectedVoucher.price,
                 callback_url: `${window.location.origin}/verify-payment`
             });
 
@@ -117,6 +120,22 @@ const PurchaseVoucher = () => {
                                 />
                             </div>
                             <p className="text-[10px] text-text-muted mt-2 italic">A copy of your voucher will be sent to this email.</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Phone Number</label>
+                            <div className="relative">
+                                <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+                                <input
+                                    type="tel"
+                                    required
+                                    className="input-field pl-10"
+                                    placeholder="024XXXXXXX"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                />
+                            </div>
+                            <p className="text-[10px] text-text-muted mt-2 italic">We'll text your Serial Number and PIN to this number.</p>
                         </div>
 
                         <div>

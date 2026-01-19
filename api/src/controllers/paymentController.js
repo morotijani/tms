@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { Payment, Invoice, Voucher, User, Setting } = require('../models');
 const paystack = require('../utils/paystack');
 const { sendVoucherEmail } = require('../utils/mail');
+const { sendVoucherSMS } = require('../utils/sms');
 
 
 // @desc    Handle Paystack Webhook
@@ -64,6 +65,11 @@ const handleWebhook = async (req, res) => {
 
                 // Send Email to the customer with serial/pin
                 await sendVoucherEmail(customer.email, voucher, settings);
+
+                // Send SMS
+                const recipientPhone = metadata.phoneNumber || customer.phone || customer.phoneNumber || '';
+                await sendVoucherSMS(recipientPhone, voucher, settings.schoolAbbreviation);
+
                 console.log(`Voucher Generated: ${serialNumber} PIN: ${pin} for ${customer.email}`);
             }
 
@@ -76,12 +82,13 @@ const handleWebhook = async (req, res) => {
 // @route   POST /api/payments/initialize-voucher
 // @access  Public
 const initializeVoucherPurchase = async (req, res) => {
-    const { email, voucherType, amount, callback_url } = req.body;
+    const { email, phoneNumber, voucherType, amount, callback_url } = req.body;
 
     try {
         const metadata = {
             type: 'voucher',
-            voucherType
+            voucherType,
+            phoneNumber
         };
 
         const response = await paystack.initializeTransaction(email, amount, metadata, callback_url);
@@ -164,6 +171,10 @@ const verifyVoucherTransaction = async (req, res) => {
 
                 // Send Email to the customer with serial/pin
                 await sendVoucherEmail(customer.email, voucher, settings);
+
+                // Send SMS
+                const recipientPhone = metadata.phoneNumber || customer.phone || customer.phoneNumber || '';
+                await sendVoucherSMS(recipientPhone, voucher, settings.schoolAbbreviation);
             }
 
 
