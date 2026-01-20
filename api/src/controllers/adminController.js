@@ -86,7 +86,7 @@ const admitApplicant = async (req, res) => {
         user.admittedProgramId = application.firstChoiceId; // Defaulting to first choice
         await user.save();
 
-        const pdfPath = await generateAdmissionLetter(application.User, application.firstChoice, application.id, settings);
+        const pdfPath = await generateAdmissionLetter(application.User, application.firstChoice, application, settings);
         // Note: In registrarController, I saw `generateAdmissionLetter(user, program, application.id, settings)`.
         // The adminController one was `generateAdmissionLetter(application.User, application.firstChoice, application.id)`.
         // I should probably pass settings here too if the util expects it, but let's stick to just fixing the ID first unless I see the util code.

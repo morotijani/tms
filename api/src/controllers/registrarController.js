@@ -74,7 +74,7 @@ const updateApplicationStatus = async (req, res) => {
             await user.save();
 
 
-            const pdfPath = await generateAdmissionLetter(user, program, application.id, settings);
+            const pdfPath = await generateAdmissionLetter(user, program, application, settings);
 
             // Convert absolute path to relative for public access
             application.admissionLetter = `/uploads/admission_letters/${application.id}.pdf`;
