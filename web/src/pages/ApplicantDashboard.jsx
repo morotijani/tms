@@ -19,6 +19,12 @@ const ApplicantDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('status');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
+
+    const notifications = application ? [
+        { id: 1, title: 'Application Update', message: `Your application status is now "${application.status}"`, time: 'Recently' },
+        ...(application.status === 'Admitted' ? [{ id: 2, title: 'Congratulations!', message: 'You have been offered admission! Download your letter.', time: 'Recent' }] : [])
+    ] : [];
 
 
     useEffect(() => {
@@ -95,9 +101,8 @@ const ApplicantDashboard = () => {
             {/* Sidebar */}
             <aside className={`
                 fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
-                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
+                transition-transform duration-300 transform md:translate-x-0
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-
             `}>
 
                 <div className="flex items-center gap-3">
@@ -150,7 +155,7 @@ const ApplicantDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 transition-all duration-300">
+            <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 md:ml-64 transition-all duration-300">
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
 
                     <div>
@@ -162,11 +167,43 @@ const ApplicantDashboard = () => {
                         </p>
 
                     </div>
-                    <div className="flex gap-4">
-                        <button className="w-12 h-12 glass-card flex items-center justify-center text-text-muted hover:text-text transition-colors relative border-border hover:border-primary/50 shadow-none">
+                    <div className="flex gap-4 relative">
+                        <button
+                            onClick={() => setShowNotifications(!showNotifications)}
+                            className="w-12 h-12 glass-card flex items-center justify-center text-text-muted hover:text-text transition-colors relative border-border hover:border-primary/50 shadow-none focus:outline-none"
+                        >
                             <Bell size={20} />
-                            <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full ring-2 ring-background"></span>
+                            {notifications.length > 0 && <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full ring-2 ring-background"></span>}
                         </button>
+
+                        <AnimatePresence>
+                            {showNotifications && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute right-0 top-full mt-2 w-80 glass-card bg-surface z-50 overflow-hidden shadow-2xl border-border"
+                                >
+                                    <div className="p-4 border-b border-border bg-primary/5">
+                                        <h3 className="font-bold text-sm">Notifications</h3>
+                                    </div>
+                                    <div className="max-h-80 overflow-y-auto">
+                                        {notifications.length > 0 ? notifications.map(n => (
+                                            <div key={n.id} className="p-4 border-b border-border hover:bg-surface-hover transition-colors cursor-pointer">
+                                                <p className="font-bold text-xs">{n.title}</p>
+                                                <p className="text-[10px] text-text-muted mt-1">{n.message}</p>
+                                                <p className="text-[8px] text-primary mt-2 uppercase font-black">{n.time}</p>
+                                            </div>
+                                        )) : (
+                                            <div className="p-8 text-center">
+                                                <Bell className="mx-auto text-text-muted opacity-20 mb-2" size={32} />
+                                                <p className="text-xs text-text-muted">No new notifications</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </header>
 
@@ -260,7 +297,7 @@ const ApplicantDashboard = () => {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
                         >
-                            <AdmissionForm application={application} setApplication={setApplication} />
+                            <AdmissionForm application={application} setApplication={setApplication} readonly={application?.status === 'Admitted' || application?.status === 'Submitted'} />
                         </motion.div>
                     )}
 

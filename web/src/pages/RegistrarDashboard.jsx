@@ -75,7 +75,7 @@ const RegistrarDashboard = () => {
             {/* Sidebar */}
             <aside className={`
                 fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
-                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
+                transition-transform duration-300 transform md:translate-x-0
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
 
@@ -122,7 +122,7 @@ const RegistrarDashboard = () => {
             </aside>
 
             {/* Main Content Area with Routes */}
-            <main className="flex-1 transition-all duration-300 overflow-hidden">
+            <main className="flex-1 md:ml-64 transition-all duration-300">
                 <Routes>
                     <Route index element={<RegistrarApplicationsContent user={user} />} />
                     <Route path="students" element={<RegistrarStudents />} />

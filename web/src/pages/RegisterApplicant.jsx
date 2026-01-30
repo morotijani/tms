@@ -81,21 +81,21 @@ const RegisterApplicant = () => {
                             <label className="block text-xs text-text-muted mb-2 font-bold uppercase tracking-wider">Username</label>
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-                                <input name="username" required className="input-field pl-10" onChange={handleChange} />
+                                <input name="username" required className="input-field !pl-12" onChange={handleChange} />
                             </div>
                         </div>
                         <div>
                             <label className="block text-xs text-text-muted mb-2 font-bold uppercase tracking-wider">Email</label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-                                <input name="email" type="email" required className="input-field pl-10" onChange={handleChange} />
+                                <input name="email" type="email" required className="input-field !pl-12" onChange={handleChange} />
                             </div>
                         </div>
                         <div>
                             <label className="block text-xs text-text-muted mb-2 font-bold uppercase tracking-wider">Password</label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-                                <input name="password" type="password" required className="input-field pl-10" onChange={handleChange} />
+                                <input name="password" type="password" required className="input-field !pl-12" onChange={handleChange} />
                             </div>
                         </div>
                     </div>
@@ -106,14 +106,14 @@ const RegisterApplicant = () => {
                             <label className="block text-xs text-text-muted mb-2 font-bold uppercase tracking-wider">Serial Number</label>
                             <div className="relative">
                                 <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-                                <input name="serialNumber" required className="input-field pl-10 font-mono" placeholder="SN102938475" onChange={handleChange} />
+                                <input name="serialNumber" required className="input-field !pl-12 font-mono" placeholder="SN102938475" onChange={handleChange} />
                             </div>
                         </div>
                         <div>
                             <label className="block text-xs text-text-muted mb-2 font-bold uppercase tracking-wider">Voucher PIN</label>
                             <div className="relative">
                                 <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-                                <input name="pin" required className="input-field pl-10 font-mono" placeholder="••••••" onChange={handleChange} />
+                                <input name="pin" required className="input-field !pl-12 font-mono" placeholder="••••••" onChange={handleChange} />
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">

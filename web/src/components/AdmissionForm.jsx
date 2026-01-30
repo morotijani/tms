@@ -14,6 +14,23 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
 
     const yearOptions = Array.from({ length: 46 }, (_, i) => currentYear - i); // Last 45 years + current
 
+    const gradeScale = {
+        'A1': 1, 'B2': 2, 'B3': 3, 'C4': 4, 'C5': 5, 'C6': 6, 'D7': 7, 'E8': 8, 'F9': 9
+    };
+
+    const calculateAggregate = (sitting) => {
+        let points = 0;
+        // Core
+        Object.values(sitting.core).forEach(grade => {
+            points += gradeScale[grade] || 0;
+        });
+        // Electives
+        sitting.electives.forEach(el => {
+            points += gradeScale[el.grade] || 0;
+        });
+        return points || '';
+    };
+
     const [step, setStep] = useState(1);
     const [showPreview, setShowPreview] = useState(readonly);
     const [errors, setErrors] = useState({});
@@ -108,6 +125,10 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
         } else {
             sitting[field] = value;
         }
+
+        // Auto calculate aggregate
+        sitting.aggregate = calculateAggregate(sitting);
+
         setFormData(prev => ({ ...prev, results: newResults }));
     };
 
@@ -291,7 +312,11 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                     <div className="flex justify-between items-start border-b-4 border-slate-900 pb-8 mb-8">
                         <div>
                             <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">{settings.schoolName || 'University Application'}</h1>
-                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Academic Year {currentYear}/{currentYear + 1}</p>
+                            <div className="flex flex-col gap-1">
+                                <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Academic Year {currentYear}/{currentYear + 1}</p>
+                                <p className="text-slate-400 font-medium text-[9px]">Date Applied: {application?.createdAt ? new Date(application.createdAt).toLocaleDateString() : 'Draft'}</p>
+                                <p className="text-slate-400 font-medium text-[9px]">Date Downloaded: {new Date().toLocaleDateString()}</p>
+                            </div>
                         </div>
                         <div className="text-right flex items-start gap-4">
                             {settings.schoolLogo && (
@@ -698,7 +723,7 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-[10px] text-slate-500">Year:</span>
                                                     <div className="flex flex-col">
-                                                        <select value={sit.year} onChange={(e) => handleResultChange(sIdx, 'year', e.target.value)} className={`w-24 bg-slate-900 border-b ${errors[`sitting_${sIdx}_year`] ? 'border-red-500' : 'border-slate-700'} text-xs focus:border-blue-500 outline-none p-1`}>
+                                                        <select value={sit.year} onChange={(e) => handleResultChange(sIdx, 'year', e.target.value)} className={`w-24 bg-surface border-b ${errors[`sitting_${sIdx}_year`] ? 'border-red-500' : 'border-border'} text-xs focus:border-primary outline-none p-1`}>
                                                             <option value="">Year</option>
                                                             {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
                                                         </select>
@@ -727,7 +752,7 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                                             <span className="text-sm text-slate-300">{sub}</span>
                                                             {errors[`sitting_${sIdx}_core_${sub}`] && <span className="text-red-500 text-[8px] font-bold uppercase">{errors[`sitting_${sIdx}_core_${sub}`]}</span>}
                                                         </div>
-                                                        <select value={sit.core[sub]} onChange={(e) => handleResultChange(sIdx, sub, e.target.value, 'core')} className={`bg-slate-900 border ${errors[`sitting_${sIdx}_core_${sub}`] ? 'border-red-500' : 'border-slate-800'} rounded px-2 py-1 text-xs`}>
+                                                        <select value={sit.core[sub]} onChange={(e) => handleResultChange(sIdx, sub, e.target.value, 'core')} className={`bg-surface border ${errors[`sitting_${sIdx}_core_${sub}`] ? 'border-red-500' : 'border-border'} rounded px-2 py-1 text-xs text-text`}>
                                                             <option value="">Grade</option>
                                                             {['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9'].map(g => <option key={g} value={g}>{g}</option>)}
                                                         </select>
@@ -741,8 +766,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                                 {sit.electives.map((el, eIdx) => (
                                                     <div key={eIdx} className="space-y-1">
                                                         <div className="flex gap-2">
-                                                            <input value={el.subject} onChange={(e) => handleResultChange(sIdx, 'subject', e.target.value, 'electives', eIdx)} placeholder="Subject" className={`flex-1 bg-slate-900 border ${errors[`sitting_${sIdx}_elective_${eIdx}_subject`] ? 'border-red-500' : 'border-slate-800'} rounded px-2 py-1 text-xs`} />
-                                                            <select value={el.grade} onChange={(e) => handleResultChange(sIdx, 'grade', e.target.value, 'electives', eIdx)} className={`bg-slate-900 border ${errors[`sitting_${sIdx}_elective_${eIdx}_grade`] ? 'border-red-500' : 'border-slate-800'} rounded px-2 py-1 text-xs`}>
+                                                            <input value={el.subject} onChange={(e) => handleResultChange(sIdx, 'subject', e.target.value, 'electives', eIdx)} placeholder="Subject" className={`flex-1 bg-surface border ${errors[`sitting_${sIdx}_elective_${eIdx}_subject`] ? 'border-red-500' : 'border-border'} rounded px-2 py-1 text-xs text-text`} />
+                                                            <select value={el.grade} onChange={(e) => handleResultChange(sIdx, 'grade', e.target.value, 'electives', eIdx)} className={`bg-surface border ${errors[`sitting_${sIdx}_elective_${eIdx}_grade`] ? 'border-red-500' : 'border-border'} rounded px-2 py-1 text-xs text-text`}>
                                                                 <option value="">Grade</option>
                                                                 {['A1', 'B2', 'B3', 'C4', 'C5', 'C6', 'D7', 'E8', 'F9'].map(g => <option key={g} value={g}>{g}</option>)}
                                                             </select>
