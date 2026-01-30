@@ -20,6 +20,8 @@ const startDB = async () => {
         await seedUsers();
         await seedPrograms();
         await seedSettings();
+        const { seedGradingSchemes } = require('./utils/seed');
+        await seedGradingSchemes();
     }
 
 };
@@ -58,14 +60,23 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+console.log('Registering /api/auth');
 app.use('/api/auth', authRoutes);
+console.log('Registering /api/admin');
 app.use('/api/admin', adminRoutes);
+console.log('Registering /api/admission');
 app.use('/api/admission', admissionRoutes);
+console.log('Registering /api/student');
 app.use('/api/student', studentRoutes);
+console.log('Registering /api/staff');
 app.use('/api/staff', staffRoutes);
+console.log('Registering /api/finance');
 app.use('/api/finance', financeRoutes);
+console.log('Registering /api/payments');
 app.use('/api/payments', paymentRoutes);
+console.log('Registering /api/registrar');
 app.use('/api/registrar', registrarRoutes);
+console.log('Registering /api/settings');
 app.use('/api/settings', settingRoutes);
 
 

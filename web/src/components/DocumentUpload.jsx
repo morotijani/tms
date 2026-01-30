@@ -156,10 +156,16 @@ const DocumentUpload = ({ application, setApplication }) => {
 
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    {files[field.name] && (
+                                    {(files[field.name] || field.current) && (
                                         <button
                                             type="button"
-                                            onClick={() => setShowPreviewModal(field.name)}
+                                            onClick={() => {
+                                                if (files[field.name]) {
+                                                    setShowPreviewModal(field.name);
+                                                } else {
+                                                    window.open(field.current.startsWith('http') ? field.current : `http://localhost:5000${field.current.startsWith('/') ? '' : '/'}${field.current}`, '_blank');
+                                                }
+                                            }}
                                             className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center hover:bg-surface-hover transition-colors"
 
                                         >

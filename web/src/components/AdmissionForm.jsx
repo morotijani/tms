@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Save, Loader2, ChevronRight, ChevronLeft, CheckCircle, User, GraduationCap, Users, FileCheck, Plus, Trash2, Printer, ExternalLink, FileText } from 'lucide-react';
+import { Save, Loader2, ChevronRight, ChevronLeft, CheckCircle, User, GraduationCap, Users, FileCheck, Plus, Trash2, Printer, ExternalLink, FileText, ShieldCheck } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
 
@@ -314,8 +314,8 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                             <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">{settings.schoolName || 'University Application'}</h1>
                             <div className="flex flex-col gap-1">
                                 <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Academic Year {currentYear}/{currentYear + 1}</p>
-                                <p className="text-slate-400 font-medium text-[9px]">Date Applied: {application?.createdAt ? new Date(application.createdAt).toLocaleDateString() : 'Draft'}</p>
-                                <p className="text-slate-400 font-medium text-[9px]">Date Downloaded: {new Date().toLocaleDateString()}</p>
+                                <p className="text-slate-400 font-medium text-[9px]">Date Applied: {application?.createdAt ? new Date(application.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Draft'}</p>
+                                <p className="text-slate-400 font-medium text-[9px]">Date Downloaded: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                             </div>
                         </div>
                         <div className="text-right flex items-start gap-4">
@@ -661,6 +661,25 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                     </div>
                                 </div>
 
+                                {/* WASSCE Grading Scale Quick Reference */}
+                                <div className="p-4 bg-surface border border-border rounded-xl">
+                                    <p className="text-[10px] font-black uppercase text-primary tracking-widest mb-3 flex items-center gap-2">
+                                        <ShieldCheck size={12} /> WASSCE Grading Scale Reference
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { g: 'A1', r: '75-100%' }, { g: 'B2', r: '70-74%' }, { g: 'B3', r: '65-69%' },
+                                            { g: 'C4', r: '60-64%' }, { g: 'C5', r: '55-59%' }, { g: 'C6', r: '50-54%' },
+                                            { g: 'D7', r: '45-49%' }, { g: 'E8', r: '40-44%' }, { g: 'F9', r: '0-39%' },
+                                        ].map(item => (
+                                            <div key={item.g} className="px-2 py-1 bg-background border border-border rounded flex flex-col items-center min-w-[50px]">
+                                                <span className="text-xs font-bold text-primary">{item.g}</span>
+                                                <span className="text-[8px] text-text-muted font-mono">{item.r}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -718,10 +737,10 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                         <div className="flex justify-between items-center border-b border-border pb-3">
 
 
-                                            <span className="text-sm font-black text-slate-500 uppercase tracking-tighter">Sitting {sIdx + 1}</span>
+                                            <span className="text-sm font-black text-text-muted uppercase tracking-tighter">Sitting {sIdx + 1}</span>
                                             <div className="flex gap-4">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] text-slate-500">Year:</span>
+                                                    <span className="text-[10px] text-text-muted">Year:</span>
                                                     <div className="flex flex-col">
                                                         <select value={sit.year} onChange={(e) => handleResultChange(sIdx, 'year', e.target.value)} className={`w-24 bg-surface border-b ${errors[`sitting_${sIdx}_year`] ? 'border-red-500' : 'border-border'} text-xs focus:border-primary outline-none p-1`}>
                                                             <option value="">Year</option>
@@ -732,9 +751,9 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] text-slate-500">Index No:</span>
+                                                    <span className="text-[10px] text-text-muted">Index No:</span>
                                                     <div className="flex flex-col">
-                                                        <input value={sit.indexNo} onChange={(e) => handleResultChange(sIdx, 'indexNo', e.target.value)} className={`w-24 bg-transparent border-b ${errors[`sitting_${sIdx}_indexNo`] ? 'border-red-500' : 'border-slate-700'} text-xs focus:border-blue-500 outline-none`} />
+                                                        <input value={sit.indexNo} onChange={(e) => handleResultChange(sIdx, 'indexNo', e.target.value)} className={`w-24 bg-transparent border-b ${errors[`sitting_${sIdx}_indexNo`] ? 'border-red-500' : 'border-border'} text-xs focus:border-primary outline-none text-text`} />
                                                         {errors[`sitting_${sIdx}_indexNo`] && <span className="text-red-500 text-[8px] font-bold uppercase">{errors[`sitting_${sIdx}_indexNo`]}</span>}
                                                     </div>
                                                 </div>
@@ -745,11 +764,11 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                         <div className="grid lg:grid-cols-2 gap-8">
                                             {/* Core Subjects */}
                                             <div className="space-y-3">
-                                                <p className="text-xs font-bold text-blue-400 uppercase">Core Subjects</p>
+                                                <p className="text-xs font-bold text-primary uppercase">Core Subjects</p>
                                                 {Object.keys(sit.core).map((sub) => (
                                                     <div key={sub} className="flex items-center justify-between gap-4">
                                                         <div className="flex flex-col">
-                                                            <span className="text-sm text-slate-300">{sub}</span>
+                                                            <span className="text-sm text-text-muted">{sub}</span>
                                                             {errors[`sitting_${sIdx}_core_${sub}`] && <span className="text-red-500 text-[8px] font-bold uppercase">{errors[`sitting_${sIdx}_core_${sub}`]}</span>}
                                                         </div>
                                                         <select value={sit.core[sub]} onChange={(e) => handleResultChange(sIdx, sub, e.target.value, 'core')} className={`bg-surface border ${errors[`sitting_${sIdx}_core_${sub}`] ? 'border-red-500' : 'border-border'} rounded px-2 py-1 text-xs text-text`}>
@@ -762,7 +781,7 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                                             </div>
                                             {/* Elective Subjects */}
                                             <div className="space-y-3">
-                                                <p className="text-xs font-bold text-blue-400 uppercase">Elective Subjects</p>
+                                                <p className="text-xs font-bold text-primary uppercase">Elective Subjects</p>
                                                 {sit.electives.map((el, eIdx) => (
                                                     <div key={eIdx} className="space-y-1">
                                                         <div className="flex gap-2">
@@ -910,7 +929,7 @@ const AdmissionForm = ({ application, setApplication, readonly = false, onDocCli
                 </form>
             </div>
 
-            <p className="text-center text-slate-500 text-xs mt-8">
+            <p className="text-center text-text-muted text-xs mt-8">
                 © {currentYear} {settings.schoolName || 'Ghana University Management System'}. Secure Digital Application Portal.
             </p>
 

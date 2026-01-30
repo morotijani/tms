@@ -1,4 +1,4 @@
-const { Application, User, Program, Voucher, Setting } = require('../models');
+const { Application, User, Program, Voucher, Setting, GradingScheme } = require('../models');
 const crypto = require('crypto');
 const { generateAdmissionLetter } = require('../utils/pdfGenerator');
 const { sendAdmissionEmail } = require('../utils/mail');
@@ -160,12 +160,72 @@ const deleteProgram = async (req, res) => {
     }
 };
 
+const getPrograms = async (req, res) => {
+    try {
+        const programs = await Program.findAll();
+        res.json(programs);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// --- Grading Scheme Management ---
+
+const getGradingSchemes = async (req, res) => {
+    try {
+        const schemes = await GradingScheme.findAll({
+            order: [['minScore', 'DESC']]
+        });
+
+        // Explicitly ensuring 200 status and array response
+        return res.status(200).json(schemes || []);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const createGradingScheme = async (req, res) => {
+    try {
+        const scheme = await GradingScheme.create(req.body);
+        res.status(201).json(scheme);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const updateGradingScheme = async (req, res) => {
+    try {
+        const scheme = await GradingScheme.findByPk(req.params.id);
+        if (!scheme) return res.status(404).json({ message: 'Grading scheme not found' });
+        await scheme.update(req.body);
+        res.json(scheme);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const deleteGradingScheme = async (req, res) => {
+    try {
+        const scheme = await GradingScheme.findByPk(req.params.id);
+        if (!scheme) return res.status(404).json({ message: 'Grading scheme not found' });
+        await scheme.destroy();
+        res.json({ message: 'Grading scheme deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createProgram,
     generateVouchers,
     admitApplicant,
     getApplications,
     updateProgram,
-    deleteProgram
+    deleteProgram,
+    getPrograms,
+    getGradingSchemes,
+    createGradingScheme,
+    updateGradingScheme,
+    deleteGradingScheme
 };
 

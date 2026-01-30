@@ -1,4 +1,4 @@
-const { Invoice, Payment, User } = require('../models');
+const { Invoice, Payment, User, Voucher } = require('../models');
 
 // @desc    Get all invoices
 // @route   GET /api/finance/invoices
@@ -57,8 +57,26 @@ const recordManualPayment = async (req, res) => {
     }
 };
 
+// @desc    Get all purchased vouchers
+// @route   GET /api/finance/vouchers
+// @access  Private/Accountant
+const getPurchasedVouchers = async (req, res) => {
+    try {
+        const vouchers = await Voucher.findAll({
+            where: {
+                status: ['Sold', 'Used']
+            },
+            order: [['soldAt', 'DESC']]
+        });
+        res.json(vouchers);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getAllInvoices,
     createInvoice,
-    recordManualPayment
+    recordManualPayment,
+    getPurchasedVouchers
 };

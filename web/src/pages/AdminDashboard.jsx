@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../utils/api';
 import {
     Users, FileUser, Layers, Settings, LogOut,
     Check, X, Search, Plus, MapPin, Building2,
@@ -21,19 +21,27 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('admissions');
     const [applications, setApplications] = useState([]);
     const [programs, setPrograms] = useState([]);
+    const [gradingSchemes, setGradingSchemes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Modal state
+    const [showGradingModal, setShowGradingModal] = useState(false);
+    const [currentGrade, setCurrentGrade] = useState({ name: '', grade: '', minScore: '', maxScore: '', point: '', description: '' });
+    const [isEditingGrade, setIsEditingGrade] = useState(false);
 
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [appRes, progRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/admin/applications'),
-                    axios.get('http://localhost:5000/api/admission/programs')
+                const [appRes, progRes, gradRes] = await Promise.all([
+                    api.get('/admin/applications'),
+                    api.get('/admin/programs'),
+                    api.get('/admin/gradings')
                 ]);
                 setApplications(appRes.data);
                 setPrograms(progRes.data);
+                setGradingSchemes(gradRes.data);
             } catch (err) {
                 console.error("Failed to fetch admin data");
             } finally {
@@ -45,7 +53,7 @@ const AdminDashboard = () => {
 
     const handleAdmit = async (id) => {
         try {
-            await axios.post(`http://localhost:5000/api/admin/admission/admit/${id}`);
+            await api.post(`/admin/admission/admit/${id}`);
             setApplications(applications.map(app => app.id === id ? { ...app, status: 'Admitted' } : app));
         } catch (err) {
             alert("Error admitting student");
@@ -59,6 +67,33 @@ const AdminDashboard = () => {
         { id: 'gradings', label: 'Grading Schemes', icon: <ShieldCheck size={20} /> },
         { id: 'settings', label: 'System Settings', icon: <Settings size={20} /> },
     ];
+
+    const handleSaveGrade = async (e) => {
+        e.preventDefault();
+        try {
+            if (isEditingGrade) {
+                const { data } = await api.put(`/admin/gradings/${currentGrade.id}`, currentGrade);
+                setGradingSchemes(gradingSchemes.map(g => g.id === currentGrade.id ? data : g));
+            } else {
+                const { data } = await api.post('/admin/gradings', currentGrade);
+                setGradingSchemes([...gradingSchemes, data]);
+            }
+            setShowGradingModal(false);
+            setCurrentGrade({ name: '', grade: '', minScore: '', maxScore: '', point: '', description: '' });
+        } catch (err) {
+            alert("Error saving grade");
+        }
+    };
+
+    const handleDeleteGrade = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this grading configuration?")) return;
+        try {
+            await api.delete(`/admin/gradings/${id}`);
+            setGradingSchemes(gradingSchemes.filter(g => g.id !== id));
+        } catch (err) {
+            alert("Error deleting grade");
+        }
+    };
 
 
     return (
@@ -101,9 +136,8 @@ const AdminDashboard = () => {
             {/* Sidebar */}
             <aside className={`
                 fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
-                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
+                transition-transform duration-300 transform md:translate-x-0
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-
             `}>
 
                 <div className="flex items-center gap-3">
@@ -155,7 +189,7 @@ const AdminDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-4 md:p-10 pt-20 md:pt-10 transition-all duration-300">
+            <main className="flex-1 p-4 md:p-10 pt-20 md:pt-10 md:ml-64 transition-all duration-300">
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
                     <div>
                         <h1 className="text-3xl font-bold font-heading capitalize text-text">{activeTab} Management</h1>
@@ -281,45 +315,84 @@ const AdminDashboard = () => {
                             className="space-y-6"
                         >
                             <div className="flex justify-between items-center">
-                                <h3 className="font-bold uppercase tracking-widest text-slate-500">Grading Configurations</h3>
-                                <button className="btn btn-primary text-xs py-2 px-6 flex items-center gap-2 font-bold"><Plus size={14} /> Define Grade</button>
+                                <h3 className="font-bold uppercase tracking-widest text-text-muted">Grading Configurations</h3>
+                                <button
+                                    onClick={() => {
+                                        setIsEditingGrade(false);
+                                        setCurrentGrade({ name: '', grade: '', minScore: '', maxScore: '', point: '', description: '' });
+                                        setShowGradingModal(true);
+                                    }}
+                                    className="btn btn-primary text-xs py-2 px-6 flex items-center gap-2 font-bold"
+                                >
+                                    <Plus size={14} /> Define Grade
+                                </button>
                             </div>
 
-                            <div className="glass-card p-8 bg-blue-600/5 border-blue-500/20 mb-8">
+                            <div className="glass-card p-8 bg-primary/5 border-primary/20 mb-8">
                                 <div className="flex items-start gap-4">
-                                    <div className="p-3 bg-blue-600 rounded-xl"><ShieldCheck size={24} /></div>
+                                    <div className="p-3 bg-primary rounded-xl text-white"><ShieldCheck size={24} /></div>
                                     <div>
-                                        <h4 className="font-bold text-lg">System-wide Grading Logic</h4>
-                                        <p className="text-sm text-slate-400 max-w-2xl">Manage how student results are calculated across various faculties. You can set minimum scores for grades like A, B+, etc., which the staff portal will use automatically.</p>
+                                        <h4 className="font-bold text-lg text-text">System-wide Grading Logic</h4>
+                                        <p className="text-sm text-text-muted max-w-2xl">Manage how student results are calculated across various faculties. You can set minimum scores for grades like A, B+, etc., which the staff portal will use automatically.</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {[
-                                    { grade: 'A', score: '80 - 100', point: '4.0', color: 'indigo' },
-                                    { grade: 'B+', score: '75 - 79', point: '3.5', color: 'blue' },
-                                    { grade: 'B', score: '70 - 74', point: '3.0', color: 'emerald' },
-                                    { grade: 'C+', score: '65 - 69', point: '2.5', color: 'amber' }
-                                ].map((g, i) => (
-                                    <div key={i} className="glass-card p-6 border-slate-800 hover:border-slate-700 transition-all">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <span className={`w-10 h-10 rounded-xl bg-blue-600/20 text-blue-500 flex items-center justify-center font-bold text-xl`}>{g.grade}</span>
-                                            <Settings size={14} className="text-slate-700 cursor-pointer" />
-                                        </div>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase">Min Score</p>
-                                        <p className="font-bold text-slate-200 mb-2">{g.score}</p>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase">Grade Point</p>
-                                        <p className="text-lg font-bold text-slate-200">{g.point}</p>
+                            {/* Grouped Grading Schemes */}
+                            {Object.entries(gradingSchemes.reduce((acc, g) => {
+                                if (!acc[g.name]) acc[g.name] = [];
+                                acc[g.name].push(g);
+                                return acc;
+                            }, {})).map(([schemeName, schemes]) => (
+                                <div key={schemeName} className="space-y-4 mb-12 last:mb-0">
+                                    <div className="flex items-center gap-4">
+                                        <h4 className="font-bold uppercase tracking-tighter text-sm text-primary border-b-2 border-primary/20 pb-1">{schemeName} Grading Scale</h4>
+                                        <div className="h-px flex-1 bg-border/50"></div>
                                     </div>
-                                ))}
-                            </div>
 
-                            <div className="flex justify-center mt-12">
-                                <button className="flex items-center gap-2 text-slate-500 hover:text-white text-xs font-bold uppercase transition-colors">
-                                    <Plus size={12} /> Add more grade levels
-                                </button>
-                            </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        {schemes.map((g, i) => (
+                                            <div key={g.id || i} className="glass-card p-6 border-border hover:border-primary/30 transition-all group relative">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <span className={`w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl`}>{g.grade}</span>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setIsEditingGrade(true);
+                                                                setCurrentGrade(g);
+                                                                setShowGradingModal(true);
+                                                            }}
+                                                            className="p-1 hover:text-primary transition-colors text-text-muted"
+                                                        >
+                                                            <Settings size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteGrade(g.id)}
+                                                            className="p-1 hover:text-red-500 transition-colors text-text-muted"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-text-muted uppercase">Score Range</p>
+                                                        <p className="font-bold text-text">{parseFloat(g.minScore)}% – {parseFloat(g.maxScore)}%</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-text-muted uppercase">Grade Point (Aggregate)</p>
+                                                        <p className="text-lg font-bold text-primary">{parseFloat(g.point)}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-text-muted uppercase">Remark</p>
+                                                        <p className="text-xs font-medium text-text-muted italic">{g.description || 'N/A'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </motion.div>
                     )}
 
@@ -333,6 +406,124 @@ const AdminDashboard = () => {
                         </motion.div>
                     )}
 
+                </AnimatePresence>
+
+                {/* Grading Modal */}
+                <AnimatePresence>
+                    {showGradingModal && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="glass-card w-full max-w-lg p-8 border-border bg-surface"
+                            >
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-bold font-heading">{isEditingGrade ? 'Edit' : 'Add'} Grading Scheme</h3>
+                                    <button onClick={() => setShowGradingModal(false)} className="text-text-muted hover:text-text"><X size={24} /></button>
+                                </div>
+
+                                <form onSubmit={handleSaveGrade} className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="label">Scheme Name</label>
+                                            <select
+                                                required
+                                                className="input-field"
+                                                value={['WASSCE', 'Tertiary', 'NABPTEX', 'GTEC'].includes(currentGrade.name) ? currentGrade.name : (currentGrade.name ? 'Other' : '')}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === 'Other') {
+                                                        setCurrentGrade({ ...currentGrade, name: '' });
+                                                    } else {
+                                                        setCurrentGrade({ ...currentGrade, name: val });
+                                                    }
+                                                }}
+                                            >
+                                                <option value="">Select Scheme</option>
+                                                <option value="WASSCE">WASSCE</option>
+                                                <option value="Tertiary">Tertiary</option>
+                                                <option value="NABPTEX">NABPTEX</option>
+                                                <option value="GTEC">GTEC</option>
+                                                <option value="Other">Other (Custom)</option>
+                                            </select>
+
+                                            {(!['WASSCE', 'Tertiary', 'NABPTEX', 'GTEC'].includes(currentGrade.name) && currentGrade.name !== undefined) && (
+                                                <input
+                                                    className="input-field mt-2"
+                                                    placeholder="Enter custom scheme name..."
+                                                    value={currentGrade.name}
+                                                    onChange={(e) => setCurrentGrade({ ...currentGrade, name: e.target.value })}
+                                                    required
+                                                />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="label">Grade Symbol</label>
+                                            <input
+                                                required
+                                                className="input-field"
+                                                placeholder="e.g. A1, B2, A, B+"
+                                                value={currentGrade.grade}
+                                                onChange={(e) => setCurrentGrade({ ...currentGrade, grade: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="label">Min Score (%)</label>
+                                            <input
+                                                required
+                                                type="number"
+                                                className="input-field"
+                                                value={currentGrade.minScore}
+                                                onChange={(e) => setCurrentGrade({ ...currentGrade, minScore: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="label">Max Score (%)</label>
+                                            <input
+                                                required
+                                                type="number"
+                                                className="input-field"
+                                                value={currentGrade.maxScore}
+                                                onChange={(e) => setCurrentGrade({ ...currentGrade, maxScore: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="label">Grade Point / Aggregate</label>
+                                            <input
+                                                required
+                                                type="number"
+                                                step="0.01"
+                                                className="input-field"
+                                                value={currentGrade.point}
+                                                onChange={(e) => setCurrentGrade({ ...currentGrade, point: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="label">Remark / Description</label>
+                                            <input
+                                                className="input-field"
+                                                placeholder="e.g. Excellent"
+                                                value={currentGrade.description}
+                                                onChange={(e) => setCurrentGrade({ ...currentGrade, description: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 flex gap-4">
+                                        <button type="button" onClick={() => setShowGradingModal(false)} className="btn bg-surface border border-border flex-1">Cancel</button>
+                                        <button type="submit" className="btn btn-primary flex-1">Save Configuration</button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </div>
+                    )}
                 </AnimatePresence>
 
             </main>

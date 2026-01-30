@@ -1,4 +1,4 @@
-const { Role, Course, User, Program, Setting } = require('../models');
+const { Role, Course, User, Program, Setting, GradingScheme } = require('../models');
 
 
 
@@ -157,7 +157,33 @@ const seedSettings = async () => {
     }
 };
 
-module.exports = { seedRoles, seedCourses, seedUsers, seedPrograms, seedSettings };
+const seedGradingSchemes = async () => {
+    try {
+        const schemes = [
+            { name: 'WASSCE', grade: 'A1', minScore: 75, maxScore: 100, point: 1, description: 'Excellent' },
+            { name: 'WASSCE', grade: 'B2', minScore: 70, maxScore: 74, point: 2, description: 'Very Good' },
+            { name: 'WASSCE', grade: 'B3', minScore: 65, maxScore: 69, point: 3, description: 'Good' },
+            { name: 'WASSCE', grade: 'C4', minScore: 60, maxScore: 64, point: 4, description: 'Credit' },
+            { name: 'WASSCE', grade: 'C5', minScore: 55, maxScore: 59, point: 5, description: 'Credit' },
+            { name: 'WASSCE', grade: 'C6', minScore: 50, maxScore: 54, point: 6, description: 'Credit' },
+            { name: 'WASSCE', grade: 'D7', minScore: 45, maxScore: 49, point: 7, description: 'Pass' },
+            { name: 'WASSCE', grade: 'E8', minScore: 40, maxScore: 44, point: 8, description: 'Pass' },
+            { name: 'WASSCE', grade: 'F9', minScore: 0, maxScore: 39, point: 9, description: 'Fail' }
+        ];
+
+        for (const scheme of schemes) {
+            await GradingScheme.findOrCreate({
+                where: { name: scheme.name, grade: scheme.grade },
+                defaults: scheme
+            });
+        }
+        console.log('Grading schemes seeded successfully.');
+    } catch (error) {
+        console.error('Error seeding grading schemes:', error);
+    }
+};
+
+module.exports = { seedRoles, seedCourses, seedUsers, seedSettings };
 
 
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../utils/api';
 import {
     Layout, BookOpen, CreditCard, GraduationCap,
     LogOut, User as UserIcon, Bell, ChevronRight, Menu, X
@@ -28,7 +28,7 @@ const StudentDashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/student/dashboard');
+                const { data } = await api.get('/student/dashboard');
                 setStudentData(data);
             } catch (err) {
                 console.error("Error fetching student data");
@@ -84,9 +84,8 @@ const StudentDashboard = () => {
             {/* Sidebar */}
             <aside className={`
                 fixed inset-y-0 left-0 z-50 w-64 border-r border-border p-6 flex flex-col gap-10 bg-surface/90 backdrop-blur-xl 
-                transition-transform duration-300 transform md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
+                transition-transform duration-300 transform md:translate-x-0
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-
             `}>
 
                 <div className="flex items-center gap-3">
@@ -153,7 +152,7 @@ const StudentDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 transition-all duration-300">
+            <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 md:ml-64 transition-all duration-300">
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
 
                     <div>

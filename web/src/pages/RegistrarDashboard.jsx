@@ -122,7 +122,7 @@ const RegistrarDashboard = () => {
             </aside>
 
             {/* Main Content Area with Routes */}
-            <main className="flex-1 md:ml-64 transition-all duration-300">
+            <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 md:ml-64 transition-all duration-300">
                 <Routes>
                     <Route index element={<RegistrarApplicationsContent user={user} />} />
                     <Route path="students" element={<RegistrarStudents />} />
