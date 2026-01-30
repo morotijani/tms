@@ -24,6 +24,21 @@ const PurchaseVoucher = () => {
 
     const handlePurchase = async (e) => {
         e.preventDefault();
+
+        // Validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const ghanaPhoneRegex = /^0(2|5)[0-9]{8}$/;
+
+        if (!emailRegex.test(email)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+
+        if (!ghanaPhoneRegex.test(phoneNumber)) {
+            setError('Please enter a valid Ghana phone number (e.g. 024XXXXXXX).');
+            return;
+        }
+
         setLoading(true);
         setError('');
 
@@ -113,7 +128,7 @@ const PurchaseVoucher = () => {
                                 <input
                                     type="email"
                                     required
-                                    className="input-field pl-10"
+                                    className="input-field !pl-12"
                                     placeholder="janesmith@gmail.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -129,7 +144,7 @@ const PurchaseVoucher = () => {
                                 <input
                                     type="tel"
                                     required
-                                    className="input-field pl-10"
+                                    className="input-field !pl-12"
                                     placeholder="024XXXXXXX"
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}

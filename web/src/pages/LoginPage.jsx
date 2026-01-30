@@ -88,7 +88,7 @@ const LoginPage = () => {
                             <input
                                 type="text"
                                 required
-                                className="input-field pl-10"
+                                className="input-field !pl-12"
                                 placeholder="Email or Student ID"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -104,7 +104,7 @@ const LoginPage = () => {
                             <input
                                 type="password"
                                 required
-                                className="input-field pl-10"
+                                className="input-field !pl-12"
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
