@@ -22,7 +22,7 @@ const RegistrarStudents = () => {
             setStudents(data);
         } catch (err) {
             console.error("Error fetching students:", err.response || err);
-            // alert("Failed to fetch students. See console.");
+            alert("Failed to fetch students. " + (err.response?.data?.message || "Verify your connection."));
         } finally {
             setLoading(false);
         }

@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import {
     Users, BookOpen, GraduationCap, DollarSign, Settings, Search,
-    Plus, Edit2, Trash2, Loader2, ChevronRight, X, Info, LogOut, Check, ShieldCheck
+    Plus, Edit2, Trash2, Loader2, ChevronRight, X, Info, LogOut, Check, ShieldCheck, Menu
 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,26 +42,44 @@ const AdminDashboard = () => {
     const [staff, setStaff] = useState([]);
     const [actionLoading, setActionLoading] = useState(false);
 
+    // User Management State
+    const [users, setUsers] = useState([]);
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [userFormData, setUserFormData] = useState({
+        firstName: '', lastName: '', email: '', username: '', password: '', role: 'staff'
+    });
+
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [appRes, progRes, gradRes] = await Promise.all([
+                const [appRes, progRes, gradRes, staffRes] = await Promise.all([
                     api.get('/admin/applications'),
                     api.get('/admin/programs'),
-                    api.get('/admin/gradings')
+                    api.get('/admin/gradings'),
+                    api.get('/admin/staff')
                 ]);
                 setApplications(appRes.data);
                 setPrograms(progRes.data);
                 setGradingSchemes(gradRes.data);
+                setUsers(staffRes.data);
             } catch (err) {
-                console.error("Failed to fetch admin data");
+                console.error("Failed to fetch admin data", err);
             } finally {
                 setLoading(false);
             }
         };
         fetchData();
     }, []);
+
+    const fetchUsers = async () => {
+        try {
+            const { data } = await api.get('/admin/staff');
+            setUsers(data);
+        } catch (err) {
+            console.error("Failed to fetch users", err);
+        }
+    };
 
     const handleAdmit = async (id) => {
         try {
@@ -144,7 +162,7 @@ const AdminDashboard = () => {
         setActionLoading(true);
         try {
             if (editingCourse) {
-                await api.put(`/ admin / courses / ${editingCourse.id} `, courseFormData);
+                await api.put(`/admin/courses/${editingCourse.id}`, courseFormData);
                 alert("Course updated successfully");
             } else {
                 await api.post('/admin/courses', { ...courseFormData, programId: selectedProgram.id });
@@ -156,6 +174,22 @@ const AdminDashboard = () => {
             fetchCourses(selectedProgram.id);
         } catch (err) {
             alert("Action failed: " + (err.response?.data?.message || err.message));
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleCreateUser = async (e) => {
+        e.preventDefault();
+        setActionLoading(true);
+        try {
+            await api.post('/admin/users', userFormData);
+            alert("User created successfully");
+            setShowUserModal(false);
+            setUserFormData({ firstName: '', lastName: '', email: '', username: '', password: '', role: 'staff' });
+            fetchUsers();
+        } catch (err) {
+            alert("Failed to create user: " + (err.response?.data?.message || err.message));
         } finally {
             setActionLoading(false);
         }
@@ -408,12 +442,48 @@ const AdminDashboard = () => {
                         >
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-bold uppercase tracking-widest text-text-muted">System Users</h3>
-                                <button className="btn btn-primary text-xs py-2 px-4 flex items-center gap-2 font-bold"><ShieldCheck size={14} /> Add Staff</button>
+                                <button
+                                    onClick={() => setShowUserModal(true)}
+                                    className="btn btn-primary text-xs py-2 px-4 flex items-center gap-2 font-bold"
+                                >
+                                    <ShieldCheck size={14} /> Add Staff
+                                </button>
                             </div>
-                            {/* Simplified list for now */}
-                            <div className="glass-card p-20 text-center">
-                                <Loader2 className="animate-spin text-primary mx-auto mb-4" />
-                                <p className="text-text-muted uppercase font-bold text-xs tracking-widest">Fetching Admissions...</p>
+
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-border text-[10px] uppercase tracking-widest text-text-muted">
+                                            <th className="p-4">Name</th>
+                                            <th className="p-4">Email</th>
+                                            <th className="p-4">Username</th>
+                                            <th className="p-4 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                        {users.length > 0 ? users.map(u => (
+                                            <tr key={u.id} className="group hover:bg-surface-hover/50 transition-colors">
+                                                <td className="p-4 font-bold text-text flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs">
+                                                        {u.firstName?.[0]}{u.lastName?.[0]}
+                                                    </div>
+                                                    {u.firstName} {u.lastName}
+                                                </td>
+                                                <td className="p-4 text-sm font-mono text-text-muted">{u.email}</td>
+                                                <td className="p-4 text-sm font-mono text-text-muted">@{u.username}</td>
+                                                <td className="p-4 text-right">
+                                                    <button className="text-text-muted hover:text-red-500 transition-colors p-2"><Trash2 size={16} /></button>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr>
+                                                <td colSpan="4" className="p-8 text-center text-text-muted font-bold uppercase tracking-widest text-xs">
+                                                    No staff members found
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </motion.div>
                     )}
@@ -929,6 +999,105 @@ const AdminDashboard = () => {
                 </AnimatePresence >
 
             </main >
+
+            {/* Add User Modal */}
+            <AnimatePresence>
+                {showUserModal && (
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+                            onClick={() => setShowUserModal(false)}
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-surface border border-border w-full max-w-md rounded-2xl p-8 z-10 shadow-2xl relative"
+                        >
+                            <h2 className="text-2xl font-black uppercase tracking-tight mb-6 text-text">Add New Staff</h2>
+                            <form onSubmit={handleCreateUser} className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-text/40 mb-1 block">First Name</label>
+                                        <input
+                                            className="w-full bg-background border border-border rounded-xl p-3 text-sm text-text outline-none focus:border-primary transition-colors"
+                                            value={userFormData.firstName}
+                                            onChange={e => setUserFormData({ ...userFormData, firstName: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-text/40 mb-1 block">Last Name</label>
+                                        <input
+                                            className="w-full bg-background border border-border rounded-xl p-3 text-sm text-text outline-none focus:border-primary transition-colors"
+                                            value={userFormData.lastName}
+                                            onChange={e => setUserFormData({ ...userFormData, lastName: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-text/40 mb-1 block">Email</label>
+                                    <input
+                                        type="email"
+                                        className="w-full bg-background border border-border rounded-xl p-3 text-sm text-text outline-none focus:border-primary transition-colors"
+                                        value={userFormData.email}
+                                        onChange={e => setUserFormData({ ...userFormData, email: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-text/40 mb-1 block">Username</label>
+                                    <input
+                                        className="w-full bg-background border border-border rounded-xl p-3 text-sm text-text outline-none focus:border-primary transition-colors"
+                                        value={userFormData.username}
+                                        onChange={e => setUserFormData({ ...userFormData, username: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-text/40 mb-1 block">Password</label>
+                                    <input
+                                        type="password"
+                                        className="w-full bg-background border border-border rounded-xl p-3 text-sm text-text outline-none focus:border-primary transition-colors"
+                                        value={userFormData.password}
+                                        onChange={e => setUserFormData({ ...userFormData, password: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-text/40 mb-1 block">Role</label>
+                                    <select
+                                        className="w-full bg-background border border-border rounded-xl p-3 text-sm text-text outline-none focus:border-primary transition-colors"
+                                        value={userFormData.role}
+                                        onChange={e => setUserFormData({ ...userFormData, role: e.target.value })}
+                                    >
+                                        <option value="staff">Staff/Lecturer</option>
+                                        <option value="registrar">Registrar</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+
+                                <div className="flex gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowUserModal(false)}
+                                        className="flex-1 py-3 bg-surface-hover text-text font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-border transition-colors border border-border"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={actionLoading}
+                                        className="flex-1 py-3 bg-primary text-white font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                                    >
+                                        {actionLoading ? <Loader2 className="animate-spin" size={16} /> : 'Create User'}
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div >
     );
 };

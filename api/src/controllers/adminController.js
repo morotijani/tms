@@ -294,6 +294,48 @@ const updateCourse = async (req, res) => {
     }
 };
 
+// @desc    Create a new user (Staff/Admin/Registrar)
+// @route   POST /api/admin/users
+// @access  Private/Admin
+const createUser = async (req, res) => {
+    const { username, email, password, firstName, lastName, role } = req.body;
+
+    try {
+        // Check if user exists
+        const userExists = await User.findOne({ where: { email } });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Find Role
+        const roleRecord = await Role.findOne({ where: { name: role } });
+        if (!roleRecord) {
+            return res.status(400).json({ message: 'Invalid role specified' });
+        }
+
+        // Create User
+        const user = await User.create({
+            username,
+            email,
+            password,
+            firstName,
+            lastName,
+            roleId: roleRecord.id
+        });
+
+        res.status(201).json({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: roleRecord.name,
+            message: 'User created successfully'
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createProgram,
     generateVouchers,
@@ -310,6 +352,7 @@ module.exports = {
     getCoursesByProgram,
     deleteCourse,
     getStaffMembers,
-    updateCourse
+    updateCourse,
+    createUser
 };
 

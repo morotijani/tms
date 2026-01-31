@@ -4,7 +4,7 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 const {
     createProgram, generateVouchers, admitApplicant, getApplications, updateProgram, deleteProgram,
     getPrograms, getGradingSchemes, createGradingScheme, updateGradingScheme, deleteGradingScheme,
-    createCourse, getCoursesByProgram, deleteCourse, getStaffMembers, updateCourse
+    createCourse, getCoursesByProgram, deleteCourse, getStaffMembers, updateCourse, createUser
 } = require('../controllers/adminController');
 const { exportNSSData } = require('../controllers/exportController');
 
@@ -39,8 +39,9 @@ router.delete('/courses/:id', authorize('admin', 'registrar'), deleteCourse);
 // Reporting & Exports
 router.get('/export/nss', authorize('admin', 'registrar'), exportNSSData);
 
-// Staff Fetching
+// Staff Fetching & User Management
 router.get('/staff', authorize('admin', 'registrar'), getStaffMembers);
+router.post('/users', authorize('admin'), createUser);
 
 console.log('✅ Admin Routes Loaded with Course Management');
 

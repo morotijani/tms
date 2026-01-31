@@ -106,7 +106,7 @@ const RegistrarPrograms = () => {
         setActionLoading(true);
         try {
             if (editingCourse) {
-                await api.put(`/ admin / courses / ${editingCourse.id} `, courseFormData);
+                await api.put(`/admin/courses/${editingCourse.id}`, courseFormData);
                 alert("Course updated successfully");
             } else {
                 await api.post('/admin/courses', { ...courseFormData, programId: selectedProgram.id });
@@ -125,7 +125,7 @@ const RegistrarPrograms = () => {
     const handleDeleteCourse = async (id) => {
         if (!window.confirm("Delete this course?")) return;
         try {
-            await api.delete(`/ admin / courses / ${id} `);
+            await api.delete(`/admin/courses/${id}`);
             fetchCourses(selectedProgram.id);
         } catch (err) {
             alert("Failed to delete course");
