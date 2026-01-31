@@ -1,4 +1,4 @@
-const { Application, User, Program, Voucher, Setting, GradingScheme } = require('../models');
+const { Application, User, Program, Voucher, Setting, GradingScheme, Course, Role } = require('../models');
 const crypto = require('crypto');
 const { generateAdmissionLetter } = require('../utils/pdfGenerator');
 const { sendAdmissionEmail } = require('../utils/mail');
@@ -215,6 +215,85 @@ const deleteGradingScheme = async (req, res) => {
     }
 };
 
+// --- Course Management ---
+
+// @desc    Add a new course to a program
+// @route   POST /api/admin/courses
+// @access  Private/Admin/Registrar
+const createCourse = async (req, res) => {
+    try {
+        const course = await Course.create(req.body);
+        res.status(201).json(course);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all courses for a program
+// @route   GET /api/admin/courses/program/:programId
+// @access  Private/Admin/Registrar/Staff
+const getCoursesByProgram = async (req, res) => {
+    try {
+        const courses = await Course.findAll({
+            where: { programId: req.params.programId },
+            include: [{
+                model: User,
+                as: 'instructor',
+                attributes: ['id', 'firstName', 'lastName', 'email']
+            }]
+        });
+        res.json(courses);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Delete a course
+// @route   DELETE /api/admin/courses/:id
+// @access  Private/Admin/Registrar
+const deleteCourse = async (req, res) => {
+    try {
+        const course = await Course.findByPk(req.params.id);
+        if (!course) return res.status(404).json({ message: 'Course not found' });
+        await course.destroy();
+        res.json({ message: 'Course deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all staff members
+// @route   GET /api/admin/staff
+// @access  Private/Admin/Registrar
+const getStaffMembers = async (req, res) => {
+    try {
+        const staffRole = await Role.findOne({ where: { name: 'staff' } });
+        if (!staffRole) return res.json([]);
+
+        const staff = await User.findAll({
+            where: { roleId: staffRole.id },
+            attributes: ['id', 'username', 'firstName', 'lastName', 'email']
+        });
+        res.json(staff);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update a course
+// @route   PUT /api/admin/courses/:id
+// @access  Private/Admin/Registrar
+const updateCourse = async (req, res) => {
+    try {
+        const course = await Course.findByPk(req.params.id);
+        if (!course) return res.status(404).json({ message: 'Course not found' });
+        await course.update(req.body);
+        res.json(course);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createProgram,
     generateVouchers,
@@ -226,6 +305,11 @@ module.exports = {
     getGradingSchemes,
     createGradingScheme,
     updateGradingScheme,
-    deleteGradingScheme
+    deleteGradingScheme,
+    createCourse,
+    getCoursesByProgram,
+    deleteCourse,
+    getStaffMembers,
+    updateCourse
 };
 

@@ -108,18 +108,18 @@ const seedPrograms = async () => {
     try {
         const programs = [
             // Undergraduate
-            { name: 'BSc. Computer Science', code: 'BCS', faculty: 'Science & Technology', department: 'Computer Science', level: 'Undergraduate', duration: 4 },
-            { name: 'BSc. Information Technology', code: 'BIT', faculty: 'Science & Technology', department: 'Information Technology', level: 'Undergraduate', duration: 4 },
-            { name: 'BSc. Business Administration', code: 'BBA', faculty: 'Business School', department: 'Management', level: 'Undergraduate', duration: 4 },
-            { name: 'BSc. Accounting', code: 'BACC', faculty: 'Business School', department: 'Accounting', level: 'Undergraduate', duration: 4 },
+            // { name: 'BSc. Computer Science', code: 'BCS', faculty: 'Science & Technology', department: 'Computer Science', level: 'Undergraduate', duration: 4 },
+            // { name: 'BSc. Information Technology', code: 'BIT', faculty: 'Science & Technology', department: 'Information Technology', level: 'Undergraduate', duration: 4 },
+            // { name: 'BSc. Business Administration', code: 'BBA', faculty: 'Business School', department: 'Management', level: 'Undergraduate', duration: 4 },
+            // { name: 'BSc. Accounting', code: 'BACC', faculty: 'Business School', department: 'Accounting', level: 'Undergraduate', duration: 4 },
 
-            // Postgraduate
-            { name: 'MSc. Cyber Security', code: 'MCS', faculty: 'Science & Technology', department: 'Computer Science', level: 'Postgraduate', duration: 2 },
-            { name: 'MBA Strategic Management', code: 'MBA', faculty: 'Business School', department: 'Management', level: 'Postgraduate', duration: 2 },
+            // // Postgraduate
+            // { name: 'MSc. Cyber Security', code: 'MCS', faculty: 'Science & Technology', department: 'Computer Science', level: 'Postgraduate', duration: 2 },
+            // { name: 'MBA Strategic Management', code: 'MBA', faculty: 'Business School', department: 'Management', level: 'Postgraduate', duration: 2 },
 
-            // Diploma / Mature
-            { name: 'Diploma in Information Technology', code: 'DIT', faculty: 'Science & Technology', department: 'Information Technology', level: 'Diploma', duration: 2 },
-            { name: 'Diploma in Business Management', code: 'DBM', faculty: 'Business School', department: 'Management', level: 'Diploma', duration: 2 }
+            // // Diploma / Mature
+            // { name: 'Diploma in Information Technology', code: 'DIT', faculty: 'Science & Technology', department: 'Information Technology', level: 'Diploma', duration: 2 },
+            // { name: 'Diploma in Business Management', code: 'DBM', faculty: 'Business School', department: 'Management', level: 'Diploma', duration: 2 }
         ];
 
         for (const prog of programs) {
@@ -183,7 +183,7 @@ const seedGradingSchemes = async () => {
     }
 };
 
-module.exports = { seedRoles, seedCourses, seedUsers, seedSettings };
+module.exports = { seedRoles, seedCourses, seedUsers, seedPrograms, seedSettings, seedGradingSchemes };
 
 
 
