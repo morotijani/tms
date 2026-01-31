@@ -118,7 +118,7 @@ const User = sequelize.define('User', {
         type: DataTypes.DATE,
         allowNull: true
     },
-    studentId: {
+    systemId: {
         type: DataTypes.STRING,
         unique: true,
         allowNull: true
@@ -145,8 +145,8 @@ const User = sequelize.define('User', {
         },
         {
             unique: true,
-            fields: ['studentId'],
-            name: 'users_studentId_unique'
+            fields: ['systemId'],
+            name: 'users_systemId_unique'
         }
     ],
     hooks: {

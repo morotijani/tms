@@ -52,8 +52,8 @@ User.hasMany(Course, { foreignKey: 'instructorId' });
 Course.belongsTo(User, { as: 'instructor', foreignKey: 'instructorId' });
 
 // Attendance
-User.hasMany(Attendance, { foreignKey: 'studentId' });
-Attendance.belongsTo(User, { as: 'student', foreignKey: 'studentId' });
+User.hasMany(Attendance, { foreignKey: 'userId' });
+Attendance.belongsTo(User, { as: 'student', foreignKey: 'userId' });
 
 Course.hasMany(Attendance, { foreignKey: 'courseId' });
 Attendance.belongsTo(Course, { foreignKey: 'courseId' });

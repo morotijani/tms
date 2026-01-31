@@ -71,7 +71,7 @@ const login = async (req, res) => {
             where: {
                 [Op.or]: [
                     { email: email },
-                    { studentId: email }
+                    { systemId: email }
                 ]
             },
             include: [{ model: Role, attributes: ['name'] }]
@@ -83,7 +83,7 @@ const login = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 role: user.Role.name,
-                studentId: user.studentId, // Send back student ID
+                systemId: user.systemId, // Send back system ID
                 token: generateToken(user.id)
             });
         } else {

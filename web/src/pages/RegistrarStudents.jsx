@@ -30,7 +30,7 @@ const RegistrarStudents = () => {
 
     const filteredStudents = students.filter(student =>
         `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.studentId?.toLowerCase().includes(searchTerm.toLowerCase())
+        student.systemId?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -73,7 +73,7 @@ const RegistrarStudents = () => {
                                     <h3 className="font-bold text-lg text-text group-hover:text-primary transition-colors">
                                         {student.firstName} {student.lastName}
                                     </h3>
-                                    <p className="text-xs font-mono text-text-muted">{student.studentId}</p>
+                                    <p className="text-xs font-mono text-text-muted">{student.systemId}</p>
                                 </div>
                             </div>
 

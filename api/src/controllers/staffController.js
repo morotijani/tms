@@ -84,10 +84,10 @@ const updateGrades = async (req, res) => {
 // @route   POST /api/staff/attendance
 // @access  Private/Staff
 const recordAttendance = async (req, res) => {
-    const { studentId, courseId, isPresent } = req.body;
+    const { userId, courseId, isPresent } = req.body;
     try {
         const attendance = await Attendance.create({
-            studentId, courseId, isPresent, date: new Date()
+            userId, courseId, isPresent, date: new Date()
         });
         res.status(201).json(attendance);
     } catch (error) {

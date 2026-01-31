@@ -71,7 +71,7 @@ const admitApplicant = async (req, res) => {
         const randomSuffix = Math.floor(1000 + Math.random() * 9000);
 
         const programCode = application.firstChoice ? application.firstChoice.code : 'GEN';
-        const studentId = `${schoolPrefix}${currentYear}${programCode}${randomSuffix}`.toUpperCase().replace(/\s/g, '');
+        const systemId = `${schoolPrefix}${currentYear}${programCode}${randomSuffix}`.toUpperCase().replace(/\s/g, '');
 
         // 2. Change Role to Student
         const studentRole = await Role.findOne({ where: { name: 'student' } });
@@ -82,20 +82,11 @@ const admitApplicant = async (req, res) => {
         // 3. Update User
         const user = await User.findByPk(application.userId);
         user.roleId = studentRole.id;
-        user.studentId = studentId;
+        user.systemId = systemId;
         user.admittedProgramId = application.firstChoiceId; // Defaulting to first choice
         await user.save();
 
         const pdfPath = await generateAdmissionLetter(application.User, application.firstChoice, application, settings);
-        // Note: In registrarController, I saw `generateAdmissionLetter(user, program, application.id, settings)`.
-        // The adminController one was `generateAdmissionLetter(application.User, application.firstChoice, application.id)`.
-        // I should probably pass settings here too if the util expects it, but let's stick to just fixing the ID first unless I see the util code.
-        // Wait, registrarController passed settings. adminController logic was:
-        // const pdfPath = await generateAdmissionLetter(application.User, application.firstChoice, application.id);
-
-        // Let's assume generateAdmissionLetter signature is flexible or I should check it.
-        // Checking registrarController again... it was: `generateAdmissionLetter(user, program, application.id, settings);`
-        // So I should probably update this call to match if I can.
 
         // Update application status
         application.status = 'Admitted';
@@ -104,15 +95,13 @@ const admitApplicant = async (req, res) => {
         await application.save();
 
         // Send Email
-        // Assuming 'program' is application.firstChoice.
-        // We need to fetch program name if not eagerly loaded or use firstChoice loaded in query.
         const admittedProgramName = application.firstChoice ? application.firstChoice.name : 'your program';
         await sendAdmissionEmail(application.User.email, user, admittedProgramName, pdfPath, settings);
 
         // Send SMS
         await sendAdmissionSMS(user.phoneNumber, user, admittedProgramName, settings.schoolAbbreviation);
 
-        res.json({ message: 'Applicant admitted and letter generated', application, studentId });
+        res.json({ message: 'Applicant admitted and letter generated', application, systemId });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -272,7 +261,7 @@ const getStaffMembers = async (req, res) => {
 
         const staff = await User.findAll({
             where: { roleId: staffRole.id },
-            attributes: ['id', 'username', 'firstName', 'lastName', 'email']
+            attributes: { exclude: ['password'] }
         });
         res.json(staff);
     } catch (error) {
@@ -313,6 +302,19 @@ const createUser = async (req, res) => {
             return res.status(400).json({ message: 'Invalid role specified' });
         }
 
+        // Generate Staff ID if role is 'staff', 'registrar', or 'admin'
+        let systemId = null;
+        if (['staff', 'registrar', 'admin'].includes(role)) {
+            const year = new Date().getFullYear();
+            const random = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+            // Format: STF-2024-1234
+            systemId = `STF-${year}-${random}`;
+
+            // Allow for custom prefixes based on role if needed?
+            // if (role === 'registrar') systemId = `REG-${year}-${random}`;
+            // if (role === 'admin') systemId = `ADM-${year}-${random}`;
+        }
+
         // Create User
         const user = await User.create({
             username,
@@ -320,7 +322,8 @@ const createUser = async (req, res) => {
             password,
             firstName,
             lastName,
-            roleId: roleRecord.id
+            roleId: roleRecord.id,
+            systemId: systemId // Saving Staff ID in the polymorphic systemId column
         });
 
         res.status(201).json({
@@ -328,7 +331,8 @@ const createUser = async (req, res) => {
             username: user.username,
             email: user.email,
             role: roleRecord.name,
-            message: 'User created successfully'
+            staffId: systemId,
+            message: `User created successfully. ID: ${systemId}`
         });
 
     } catch (error) {

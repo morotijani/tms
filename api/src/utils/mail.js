@@ -74,7 +74,7 @@ const sendAdmissionEmail = async (to, user, programName, filePath, settings) => 
 				
 				<div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
 					<p style="margin: 0; font-size: 14px; color: #64748b; text-transform: uppercase;">Your Student ID</p>
-					<p style="margin: 0 0 5px 0; font-size: 24px; font-weight: bold; color: #0f172a;">${user.studentId}</p>
+					<p style="margin: 0 0 5px 0; font-size: 24px; font-weight: bold; color: #0f172a;">${user.systemId}</p>
 					<p style="margin: 0; font-size: 12px; color: #64748b;">Use this ID to login to the Student Portal.</p>
 				</div>
 

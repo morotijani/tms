@@ -59,7 +59,7 @@ const updateApplicationStatus = async (req, res) => {
             const schoolPrefix = settings.schoolAbbreviation || 'GUMS';
 
             // Format: PREFIX + Year + Program Code + Random
-            const studentId = `${schoolPrefix}${currentYear}${program.code}${randomSuffix}`.toUpperCase().replace(/\s/g, '');
+            const systemId = `${schoolPrefix}${currentYear}${program.code}${randomSuffix}`.toUpperCase().replace(/\s/g, '');
 
             // 2. Change Role to Student
             const studentRole = await Role.findOne({ where: { name: 'student' } });
@@ -69,7 +69,7 @@ const updateApplicationStatus = async (req, res) => {
 
             // 3. Update User
             user.roleId = studentRole.id;
-            user.studentId = studentId;
+            user.systemId = systemId;
             user.admittedProgramId = admittedProgramId;
             await user.save();
 

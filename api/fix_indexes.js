@@ -11,7 +11,7 @@ const { sequelize } = require('./src/config/database');
         // We want to drop anything that looks like 'email_2', 'username_5', 'studentId_12', etc.
 
         const indexesToDrop = [];
-        const keep = ['PRIMARY', 'roleId', 'admittedProgramId', 'email', 'username', 'studentId', 'users_studentId_unique'];
+        const keep = ['PRIMARY', 'roleId', 'admittedProgramId', 'email', 'username', 'systemId', 'users_systemId_unique'];
 
         results.forEach(row => {
             const name = row.Key_name;

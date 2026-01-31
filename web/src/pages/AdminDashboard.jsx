@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import {
     Users, BookOpen, GraduationCap, DollarSign, Settings, Search,
-    Plus, Edit2, Trash2, Loader2, ChevronRight, X, Info, LogOut, Check, ShieldCheck, Menu
+    Plus, Edit2, Trash2, Loader2, ChevronRight, X, Info, LogOut, Check, ShieldCheck, Menu, Eye
 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,6 +45,8 @@ const AdminDashboard = () => {
     // User Management State
     const [users, setUsers] = useState([]);
     const [showUserModal, setShowUserModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showUserDetailModal, setShowUserDetailModal] = useState(false);
     const [userFormData, setUserFormData] = useState({
         firstName: '', lastName: '', email: '', username: '', password: '', role: 'staff'
     });
@@ -454,6 +456,7 @@ const AdminDashboard = () => {
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="border-b border-border text-[10px] uppercase tracking-widest text-text-muted">
+                                            <th className="p-4">Staff ID</th>
                                             <th className="p-4">Name</th>
                                             <th className="p-4">Email</th>
                                             <th className="p-4">Username</th>
@@ -463,6 +466,7 @@ const AdminDashboard = () => {
                                     <tbody className="divide-y divide-border">
                                         {users.length > 0 ? users.map(u => (
                                             <tr key={u.id} className="group hover:bg-surface-hover/50 transition-colors">
+                                                <td className="p-4 text-xs font-black font-mono text-primary/80 uppercase tracking-wider">{u.systemId || 'N/A'}</td>
                                                 <td className="p-4 font-bold text-text flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs">
                                                         {u.firstName?.[0]}{u.lastName?.[0]}
@@ -471,13 +475,20 @@ const AdminDashboard = () => {
                                                 </td>
                                                 <td className="p-4 text-sm font-mono text-text-muted">{u.email}</td>
                                                 <td className="p-4 text-sm font-mono text-text-muted">@{u.username}</td>
-                                                <td className="p-4 text-right">
+                                                <td className="p-4 text-right flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => { setSelectedUser(u); setShowUserDetailModal(true); }}
+                                                        className="text-text-muted hover:text-primary transition-colors p-2"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
                                                     <button className="text-text-muted hover:text-red-500 transition-colors p-2"><Trash2 size={16} /></button>
                                                 </td>
                                             </tr>
                                         )) : (
                                             <tr>
-                                                <td colSpan="4" className="p-8 text-center text-text-muted font-bold uppercase tracking-widest text-xs">
+                                                <td colSpan="5" className="p-8 text-center text-text-muted font-bold uppercase tracking-widest text-xs">
                                                     No staff members found
                                                 </td>
                                             </tr>
@@ -1094,6 +1105,110 @@ const AdminDashboard = () => {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* USER DETAIL MODAL */}
+            <AnimatePresence>
+                {showUserDetailModal && selectedUser && (
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+                            onClick={() => setShowUserDetailModal(false)}
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-surface border border-border w-full max-w-2xl rounded-2xl p-8 z-10 shadow-2xl relative overflow-y-auto max-h-[90vh]"
+                        >
+                            <div className="flex justify-between items-start mb-6">
+                                <div>
+                                    <h2 className="text-2xl font-black uppercase tracking-tight text-text">Staff Details</h2>
+                                    <p className="text-sm text-text-muted font-mono">{selectedUser.systemId}</p>
+                                </div>
+                                <button onClick={() => setShowUserDetailModal(false)} className="p-2 hover:bg-surface-hover rounded-full">
+                                    <X size={20} className="text-text-muted" />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary border-b border-border pb-2">Personal Info</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">First Name</label>
+                                            <p className="font-bold text-text">{selectedUser.firstName}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Last Name</label>
+                                            <p className="font-bold text-text">{selectedUser.lastName}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Other Names</label>
+                                            <p className="font-bold text-text">{selectedUser.otherNames || '-'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Gender</label>
+                                            <p className="font-bold text-text">{selectedUser.gender || '-'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Date of Birth</label>
+                                            <p className="font-bold text-text">{selectedUser.dateOfBirth ? new Date(selectedUser.dateOfBirth).toLocaleDateString() : '-'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Religion</label>
+                                            <p className="font-bold text-text">{selectedUser.religion || '-'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary border-b border-border pb-2">Contact & Account</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Email</label>
+                                            <p className="font-bold text-text flex items-center gap-2"><span className="block w-2 h-2 rounded-full bg-green-500"></span> {selectedUser.email}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Phone</label>
+                                            <p className="font-bold text-text">{selectedUser.phoneNumber || '-'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Username</label>
+                                            <p className="font-bold text-text font-mono">@{selectedUser.username}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Role</label>
+                                            <span className="inline-block px-2 py-1 rounded bg-primary/10 text-primary text-xs font-bold uppercase">{selectedUser.role || 'Staff'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="col-span-1 md:col-span-2 space-y-4">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary border-b border-border pb-2">Address</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Home Address</label>
+                                            <p className="text-sm text-text">{selectedUser.homeAddress || '-'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] uppercase tracking-widest text-text-muted">Ghana Post GPS</label>
+                                            <p className="text-sm text-text font-mono">{selectedUser.ghanaPostGps || '-'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 flex justify-end">
+                                <button
+                                    onClick={() => setShowUserDetailModal(false)}
+                                    className="px-6 py-3 bg-surface-hover text-text font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-border transition-colors border border-border"
+                                >
+                                    Close
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}

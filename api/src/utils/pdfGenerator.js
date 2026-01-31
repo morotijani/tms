@@ -61,13 +61,13 @@ const generateAdmissionLetter = async (user, program, application, settings) => 
         // Reset X to margin
         doc.x = 50;
         yPos = doc.y + 10;
-        doc.text(`Our Ref: ADM/${(program.code || 'GEN')}/${new Date().getFullYear()}/${user.studentId?.slice(-4) || 'XXXX'}`, 50, yPos);
+        doc.text(`Our Ref: ADM/${(program.code || 'GEN')}/${new Date().getFullYear()}/${user.systemId?.slice(-4) || 'XXXX'}`, 50, yPos);
         doc.text(`Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`, 400, yPos, { align: 'right' });
 
         doc.moveDown();
         doc.x = 50; // Force reset X to margin
         doc.font('Helvetica-Bold').text(`${user.firstName} ${user.lastName} ${user.otherNames || ''}`.toUpperCase());
-        if (user.studentId) doc.text(`Student ID: ${user.studentId}`);
+        if (user.systemId) doc.text(`Student ID: ${user.systemId}`);
         doc.font('Helvetica').text('Dear Sir/Madam,');
         doc.moveDown();
 
@@ -87,7 +87,7 @@ const generateAdmissionLetter = async (user, program, application, settings) => 
         doc.moveDown(0.5);
 
         // Student ID Info
-        doc.text(`3. Your University Identification Number is ${user.studentId || '(To be assigned)'}. Use this number in addition to your full name to pay your fees and for all official communication.`, { align: 'justify' });
+        doc.text(`3. Your University Identification Number is ${user.systemId || '(To be assigned)'}. Use this number in addition to your full name to pay your fees and for all official communication.`, { align: 'justify' });
         doc.moveDown(0.5);
 
         // Fee Information

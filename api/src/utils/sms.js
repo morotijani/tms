@@ -42,7 +42,7 @@ const sendVoucherSMS = async (to, voucher, schoolAbbreviation) => {
 };
 
 const sendAdmissionSMS = async (to, user, programName, schoolAbbreviation) => {
-    const message = `Congrats ${user.firstName}!\nYou have been admitted to ${programName} at ${schoolAbbreviation}.\nYour Student ID: ${user.studentId}.\nCheck your email for details.`;
+    const message = `Congrats ${user.firstName}!\nYou have been admitted to ${programName} at ${schoolAbbreviation}.\nYour Student ID: ${user.systemId}.\nCheck your email for details.`;
     return await sendSMS(to, message);
 };
 
