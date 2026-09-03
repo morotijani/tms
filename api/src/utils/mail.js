@@ -117,4 +117,44 @@ const sendAdmissionEmail = async (to, user, programName, filePath, settings) => 
     }
 };
 
-module.exports = { sendVoucherEmail, sendAdmissionEmail };
+const sendPasswordResetEmail = async (to, resetUrl, settings) => {
+    const schoolName = settings?.schoolName || 'TMS';
+    const schoolAbbreviation = settings?.schoolAbbreviation || 'TMS';
+
+    const mailOptions = {
+        from: `"${schoolAbbreviation} Support" <${process.env.EMAIL_USER}>`,
+        to,
+        subject: `Password Reset Request - ${schoolAbbreviation}`,
+        html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <h2 style="color: #0066ff; text-align: center;">Password Reset</h2>
+                <p>Hello,</p>
+                <p>We received a request to reset your password for your <strong>${schoolName}</strong> account. If you did not make this request, you can safely ignore this email.</p>
+                
+                <p style="text-align: center; margin: 30px 0;">
+                    <a href="${resetUrl}" style="background: #0066ff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Reset Password</a>
+                </p>
+
+                <p>Or copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; color: #64748b;"><a href="${resetUrl}">${resetUrl}</a></p>
+                
+                <p><em>Note: This link will expire in 15 minutes.</em></p>
+                
+                <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 40px;">
+                    &copy; ${new Date().getFullYear()} ${schoolName}. All rights reserved.
+                </p>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Password reset email sent to ${to}`);
+        return true;
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        return false;
+    }
+};
+
+module.exports = { sendVoucherEmail, sendAdmissionEmail, sendPasswordResetEmail };

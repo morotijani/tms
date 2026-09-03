@@ -15,6 +15,8 @@ import AccountantDashboard from './pages/AccountantDashboard';
 import RegistrarDashboard from './pages/RegistrarDashboard';
 import PurchaseVoucher from './pages/PurchaseVoucher';
 import VerifyPayment from './pages/VerifyPayment';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -32,6 +34,8 @@ function App() {
               <Route path="/register" element={<RegisterApplicant />} />
               <Route path="/purchase-voucher" element={<PurchaseVoucher />} />
               <Route path="/verify-payment" element={<VerifyPayment />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password/:id/:token" element={<ResetPasswordPage />} />
 
 
               <Route path="/applicant/*" element={<ProtectedRoute allowedRoles={['applicant', 'student']}><ApplicantDashboard /></ProtectedRoute>} />
