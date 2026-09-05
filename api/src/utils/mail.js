@@ -117,6 +117,7 @@ const sendAdmissionEmail = async (to, user, programName, filePath, settings) => 
     }
 };
 
+// @desc    Send Password Reset Email
 const sendPasswordResetEmail = async (to, resetUrl, settings) => {
     const schoolName = settings?.schoolName || 'TMS';
     const schoolAbbreviation = settings?.schoolAbbreviation || 'TMS';
